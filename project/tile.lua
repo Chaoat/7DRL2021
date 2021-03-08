@@ -1,7 +1,7 @@
 local Tile = {}
 
 function Tile.new(x, y, health, map)
-	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}}
+	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false}
 	local layers = Layers.getAllLayers()
 	
 	for i = 1, #layers do
@@ -38,12 +38,14 @@ function Tile.compare(tile1, tile2)
 end
 
 function Tile.draw(tile, camera)
-	local tileImage = Image.getImage("tiles/floor")
-	local parity = (tile.x + tile.y)%2
-	local colour = {0.8 - 0.4*parity, 0.8 - 0.4*parity, 0.8 - 0.4*parity, 1}
-	
-	love.graphics.setColor(colour)
-	Image.drawImage(tileImage, camera, tile.x, tile.y, 0)
+	if tile.visible then
+		local tileImage = Image.getImage("tiles/floor")
+		local parity = (tile.x + tile.y)%2
+		local colour = {0.8 - 0.4*parity, 0.8 - 0.4*parity, 0.8 - 0.4*parity, 1}
+		
+		love.graphics.setColor(colour)
+		Image.drawImage(tileImage, camera, tile.x, tile.y, 0)
+	end
 end
 
 return Tile

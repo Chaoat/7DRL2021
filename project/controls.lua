@@ -27,6 +27,16 @@ end
 
 addControls("turnEnd", {"space"})
 
+addControls("topLeft", {"kp7"})
+addControls("top", {"kp8"})
+addControls("topRight", {"kp9"})
+addControls("left", {"kp4"})
+addControls("center", {"kp5"})
+addControls("right", {"kp6"})
+addControls("botLeft", {"kp1"})
+addControls("bot", {"kp2"})
+addControls("botRight", {"kp3"})
+
 function Controls.keyToControls(key)
 	--Returns the controls attached to a certain key
 	local list = {}

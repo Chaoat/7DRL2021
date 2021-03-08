@@ -47,6 +47,15 @@ function Map.iterateOverAllTiles(map, func)
 	end
 end
 
+function Map.iterateOverTileRange(map, xRange, yRange, func)
+	--func(tile)
+	for i = math.max(map.minCoords[1], xRange[1]), math.min(map.maxCoords[1], xRange[2]) do
+		for j = math.max(map.minCoords[2], yRange[1]), math.min(map.maxCoords[2], yRange[2]) do
+			func(map.tileMap[i][j])
+		end
+	end
+end
+
 function Map.getTile(map, x, y)
 	local tX = Misc.round(x)
 	local tY = Misc.round(y)

@@ -1,8 +1,12 @@
 local World = {}
 
 function World.new()
-	local world = {physicsSystem = PhysicsSystem.new(), map = Map.new(40, 40)}
-	Body.new(10, 0, world, 1, 100, 1, "wall")
+	local world = {physicsSystem = PhysicsSystem.new(), map = Map.new(40, 40), characters = {}}
+	Wall.new(world, 10, 0)
+	Wall.new(world, 10, 1)
+	Wall.new(world, 10, 2)
+	Wall.new(world, 10, 3)
+	Wall.new(world, 10, 4)
 	
 	return world
 end

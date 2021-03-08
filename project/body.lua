@@ -2,7 +2,7 @@ local Body = {}
 
 local ID = 0
 function Body.new(x, y, world, health, mass, bounce, layer)
-	local body = {x = x, y = y, health = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = world.map, layer = layer, ID = ID}
+	local body = {x = x, y = y, health = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = world.map, world = world, layer = layer, ID = ID, moveCallBacks = {}}
 	ID = ID + 1
 	PhysicsSystem.addBody(world.physicsSystem, body)
 	
@@ -11,8 +11,13 @@ function Body.new(x, y, world, health, mass, bounce, layer)
 	return body
 end
 
+function Body.addMoveCallback(body, func)
+	--func(oldTile)
+	table.insert(body.moveCallBacks, func)
+end
+
 function Body.impartForce(body, force, angle)
-	local nEnergy, nAngle = PhysicsSystem.addVectors(body.speed*body.mass, body.angle, force, angle)
+	local nEnergy, nAngle = Vector.addVectors(body.speed*body.mass, body.angle, force, angle)
 	body.speed = nEnergy/body.mass
 	body.angle = nAngle
 end
@@ -20,6 +25,10 @@ end
 function Body.update(body, dt)
 	local nextX = body.x + dt*body.speed*math.cos(body.angle)
 	local nextY = body.y + dt*body.speed*math.sin(body.angle)
+	
+	if body.friction then
+		body.speed = body.speed*(1 - dt*body.friction)
+	end
 	
 	Body.move(body, nextX, nextY)
 end
@@ -39,6 +48,10 @@ function Body.move(body, newX, newY)
 			end
 			body.tile = nextTile
 			Tile.addBody(nextTile, body)
+			
+			for i = 1, #body.moveCallBacks do
+				body.moveCallBacks[i](oldTile)
+			end
 		end
 	end
 	

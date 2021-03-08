@@ -25,8 +25,9 @@ local function addNewLayer(layerName, collisions)
 	layerTables[layerName] = layerTable
 end
 
-addNewLayer("wall", 	{true})
-addNewLayer("bullet", 	{true, false})
+addNewLayer("wall", 		{true})
+addNewLayer("bullet", 		{true, false})
+addNewLayer("character", 	{true, true, true})
 
 function Layers.getAllLayers()
 	return layerAddOrder

@@ -22,25 +22,44 @@ function TurnCalculation.runTurn(turnSystem, world)
 		
 		turnSystem.turnLeft = turnSystem.turnDuration
 		
-		local b1 = Body.new(0, 10, world, 1, 1, 0, "bullet")
-		Body.impartForce(b1, 20, -math.pi/4)
+		--local b1 = Body.new(0, 10, world, 1, 1, 0, "bullet")
+		--Body.impartForce(b1, 20, -math.pi/4)
 	end
 end
 
-function TurnCalculation.updateTurn(turnSystem, world, dt)
-	dt = math.min(turnSystem.turnLeft, dt)
-	
-	local stepTime = math.min(dt, turnSystem.stepSize)
-	while stepTime > 0 do
-		local thisStep = math.min(stepTime, turnSystem.stepSize)
-		PhysicsSystem.update(world, dt)
-		stepTime = stepTime - thisStep
+function TurnCalculation.updateTurn(game, dt)
+	local world = game.world
+	local turnSystem = game.turnSystem
+	if turnSystem.turnRunning then
+		dt = math.min(turnSystem.turnLeft, dt)
+		
+		local stepTime = math.min(dt, turnSystem.stepSize)
+		while stepTime > 0 do
+			local thisStep = math.min(stepTime, turnSystem.stepSize)
+			
+			for i = 1, #world.characters do
+				Character.update(world.characters[i], turnSystem.turnLeft, thisStep)
+			end
+			
+			PhysicsSystem.update(world, dt)
+			
+			stepTime = stepTime - thisStep
+		end
+		
+		turnSystem.turnLeft = turnSystem.turnLeft - dt
+		if turnSystem.turnLeft <= 0 then
+			TurnCalculation.endTurn(game)
+		end
 	end
+end
+
+function TurnCalculation.endTurn(game)
+	local world = game.world
+	local turnSystem = game.turnSystem
+	local player = game.player
 	
-	turnSystem.turnLeft = turnSystem.turnLeft - dt
-	if turnSystem.turnLeft <= 0 then
-		turnSystem.turnRunning = false
-	end
+	
+	turnSystem.turnRunning = false
 end
 
 return TurnCalculation

@@ -25,14 +25,6 @@ function PhysicsSystem.update(world, dt)
 	Map.cleanAllTiles(world.map)
 end
 
-function PhysicsSystem.addVectors(speed1, angle1, speed2, angle2)
-	local nXSpeed = speed1*math.cos(angle1) + speed2*math.cos(angle2)
-	local nYSpeed = speed1*math.sin(angle1) + speed2*math.sin(angle2)
-	local nSpeed = math.sqrt(nXSpeed^2 + nYSpeed^2)
-	local nAngle = math.atan2(nYSpeed, nXSpeed)
-	return nSpeed, nAngle
-end
-
 local function findIncident(body, newX, newY, tile)
 	local bodyAngle = math.atan2(body.y - tile.y, body.x - tile.x)
 	local newAngle = math.atan2(newY - tile.y, newX - tile.x)
@@ -90,7 +82,7 @@ function PhysicsSystem.processCollision(body, newX, newY, tile)
 		local averageBounce = body.bounce
 		for i = 1, #colliders do
 			local collider = colliders[i]
-			totalEnergy, totalAngle = PhysicsSystem.addVectors(totalEnergy, totalAngle, collider.speed*collider.mass, collider.angle)
+			totalEnergy, totalAngle = Vector.addVectors(totalEnergy, totalAngle, collider.speed*collider.mass, collider.angle)
 			averageBounce = averageBounce + collider.bounce
 			totalMass = totalMass + collider.mass
 		end

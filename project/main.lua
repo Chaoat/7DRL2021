@@ -11,6 +11,13 @@ Misc = require("misc")
 Controls = require("controls")
 TurnCalculation = require("turnCalculation")
 Layers = require("layers")
+Character = require("character")
+Vector = require("vector")
+Player = require("player")
+Wall = require("wall")
+Vision = require("vision")
+
+local profile = require("profile")
 
 local globalGame
 function love.load()
@@ -19,10 +26,16 @@ end
 
 function love.update(dt)
 	Game.update(globalGame, dt)
+	
+	profile.update(dt)
 end
 
 function love.keypressed(key, scancode, isrepeat)
 	Game.handleKeyboardInput(globalGame, key)
+	
+	if key == "f5" then
+		profile.start(5)
+	end
 end
 
 function love.draw()
