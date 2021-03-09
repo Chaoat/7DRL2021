@@ -1,13 +1,18 @@
 local Game = {}
 
 function Game.new()
-	local game = {world = World.new(), turnSystem = TurnCalculation.newSystem(0.2), mainCamera = Camera.new(800, 600, 20, 20)}
-	game.player = Player.new(0, 0, game.world)
+	local mapRadius = 7
+	local segmentSize = 6
+	local game = {world = World.new(mapRadius, segmentSize), turnSystem = TurnCalculation.newSystem(0.2), mainCamera = Camera.new(800, 600, 20, 20)}
+	game.player = Player.new((mapRadius + 0.5)*segmentSize, 0, game.world)
+	game.mainCamera.followingBody = game.player.character.body
 	return game
 end
 
 function Game.update(game, dt)
 	TurnCalculation.updateTurn(game, dt)
+	Camera.update(game.mainCamera, dt)
+	print(game.player.character.body.health)
 end
 
 function Game.draw(game)

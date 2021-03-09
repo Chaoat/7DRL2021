@@ -28,6 +28,7 @@ end
 addNewLayer("wall", 		{true})
 addNewLayer("bullet", 		{true, false})
 addNewLayer("character", 	{true, true, true})
+addNewLayer("explosion", 	{true, false, true, false})
 
 function Layers.getAllLayers()
 	return layerAddOrder

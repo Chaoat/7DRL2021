@@ -20,7 +20,7 @@ function Tile.cleanTile(tile, layer)
 	local i = 1
 	while i <= #tile.bodies[layer] do
 		local body = tile.bodies[layer][i]
-		if Tile.compare(body.tile, tile) then
+		if not body.destroy and Tile.compare(body.tile, tile) then
 			i = i + 1
 		else
 			--print(tile.x .. ":" .. tile.y .. " removed body " .. tile.bodies[layer][i].ID)

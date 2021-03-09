@@ -19,8 +19,13 @@ end
 
 function PhysicsSystem.update(world, dt)
 	local pS = world.physicsSystem
-	for i = 1, #pS.bodies do
+	local i = #pS.bodies
+	while i > 0 do
 		Body.update(pS.bodies[i], dt)
+		if pS.bodies[i].destroy then
+			table.remove(pS.bodies, i)
+		end
+		i = i - 1
 	end
 	Map.cleanAllTiles(world.map)
 end

@@ -1,7 +1,7 @@
 local Map = {}
 
-function Map.new(width, height)
-	local map = {tileMap = {}, minCoords = {0, 0}, maxCoords = {0, 0}, cleaningTiles = {}}
+function Map.new(width, height, structure)
+	local map = {tileMap = {}, minCoords = {0, 0}, maxCoords = {0, 0}, cleaningTiles = {}, structure = structure}
 	Map.expand(map, -math.ceil(width/2), -math.ceil(height/2), math.floor(width/2), math.floor(height/2))
 	
 	return map

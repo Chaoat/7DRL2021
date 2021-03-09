@@ -16,11 +16,19 @@ Vector = require("vector")
 Player = require("player")
 Wall = require("wall")
 Vision = require("vision")
+MapGeneration = require("MapGeneration")
+Random = require("randomFunctions")
+Weapon = require("weapon")
+Explosion = require("explosion")
 
 local profile = require("profile")
 
 local globalGame
+local testStructure
 function love.load()
+	math.randomseed(os.clock())
+	love.keyboard.setKeyRepeat(true)
+	
 	globalGame = Game.new()
 end
 

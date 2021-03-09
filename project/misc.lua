@@ -34,4 +34,23 @@ function Misc.angleToDir(angle)
 	return x, y
 end
 
+function Misc.binaryInsert(list, element, comparitor)
+	local elementWeight = element[comparitor]
+	
+	local first = 1
+	local last = #list
+	while first <= last do
+		local i = math.ceil((last + first)/2)
+		if list[i][comparitor] <= elementWeight then
+			first = i + 1
+		elseif list[i][comparitor] > elementWeight then
+			last = i - 1
+		end
+	end
+	table.insert(list, first, element)
+	
+	
+	return first
+end
+
 return Misc

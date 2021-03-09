@@ -30,7 +30,35 @@ function Body.update(body, dt)
 		body.speed = body.speed*(1 - dt*body.friction)
 	end
 	
-	Body.move(body, nextX, nextY)
+	if not Body.move(body, nextX, nextY) then
+		--Body.update(body, dt)
+	end
+	
+	if body.minSpeed then
+		if body.speed < body.minSpeed then
+			Body.destroy(body)
+		end
+	end
+	
+	if body.duration then
+		if body.duration <= 0 then
+			Body.destroy(body)
+		else
+			body.duration = body.duration - dt
+		end
+	end
+end
+
+function Body.destroy(body)
+	if not body.destroy then
+		if body.destroyFunction then
+			body.destroyFunction(body)
+		end
+		body.destroy = true
+		if body.tile then
+			Map.addTileToCleanQueue(body.map, body.tile, body.layer)
+		end
+	end
 end
 
 function Body.move(body, newX, newY)
@@ -58,13 +86,16 @@ function Body.move(body, newX, newY)
 	if not collided then
 		body.x = newX
 		body.y = newY
+		return true
+	else
+		return false
 	end
 end
 
 function Body.debugDrawBodies(bodies, camera)
-	love.graphics.setColor(0, 1, 0, 0.7)
 	for i = 1, #bodies do
 		local body = bodies[i]
+		love.graphics.setColor(body.speed/100, (body.angle%(2*math.pi))/2*math.pi, 0, 0.7)
 		Camera.drawTo(camera, body.x, body.y, function(drawX, drawY)
 			love.graphics.circle("fill", drawX, drawY, 7)
 		end)

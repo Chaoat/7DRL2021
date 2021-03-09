@@ -1,18 +1,16 @@
 local World = {}
 
-function World.new()
-	local world = {physicsSystem = PhysicsSystem.new(), map = Map.new(40, 40), characters = {}}
-	Wall.new(world, 10, 0)
-	Wall.new(world, 10, 1)
-	Wall.new(world, 10, 2)
-	Wall.new(world, 10, 3)
-	Wall.new(world, 10, 4)
+function World.new(mapRadius, segmentSize)
+	local world = {physicsSystem = PhysicsSystem.new(), map = nil, characters = {}, bullets = {}}
+	MapGeneration.generateMapFromStructure(MapGeneration.generateMapStructure(mapRadius), segmentSize, world)
 	
 	return world
 end
 
 function World.draw(world, camera)
 	Map.drawTiles(world.map, camera)
+	
+	MapGeneration.testDrawStructure(100, 100, world.map.structure)
 end
 
 return World

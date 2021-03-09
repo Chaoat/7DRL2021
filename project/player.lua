@@ -1,7 +1,7 @@
 local Player = {}
 
 function Player.new(x, y, world)
-	local character = Character.new(Body.new(x, y, world, 1, 1, 0, "character"), 200)
+	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200)
 	local player = {character = character, viewRange = 20}
 	
 	local function updateVision(oldTile)
@@ -20,6 +20,11 @@ end
 
 local function playerMove(player, turnSystem, xDir, yDir)
 	Character.moveCharacter(player.character, xDir, yDir)
+	
+	TurnCalculation.addWeaponDischarge(function()
+		return Weapon.boltCaster(player.character.body.x, player.character.body.y, 0, 0, player.character.body.world)
+	end, 0, turnSystem)
+	
 	TurnCalculation.runTurn(turnSystem, player.character.world)
 end
 
