@@ -40,7 +40,11 @@ end
 function TurnCalculation.updateTurn(game, dt)
 	local world = game.world
 	local turnSystem = game.turnSystem
+	
 	if turnSystem.turnRunning then
+		if turnSystem.stepSize > 0.05 then
+			dt = turnSystem.stepSize
+		end
 		dt = math.min(turnSystem.turnLeft, dt)
 		
 		local stepTime = dt

@@ -223,19 +223,30 @@ function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world
 		if node then
 			botOpen = node.botOpen
 			rightOpen = node.rightOpen
+			Map.iterateOverTileRange(map, {map.minCoords[1] + segmentSize*x, map.minCoords[1] + segmentSize*(x + 1)}, {map.minCoords[2] + segmentSize*y, map.minCoords[2] + segmentSize*(y + 1)}, function(tile)
+				Tile.reFloor(tile, 100)
+			end)
 		end
 		
 		local placeCorner = false
 		if y + 1 <= mapStructure.height and mapStructure.nodes[x][y + 1] or node then
 			placeCorner = true
 			if not botOpen then
-				placeWall(map.minCoords[1] + segmentSize*x + 1, map.minCoords[2] + segmentSize*(y + 1), map.minCoords[1] + segmentSize*(x + 1) - 1, map.minCoords[2] + segmentSize*(y + 1))
+				local x1 = map.minCoords[1] + segmentSize*x + 1
+				local y1 = map.minCoords[2] + segmentSize*(y + 1)
+				local x2 = map.minCoords[1] + segmentSize*(x + 1) - 1
+				local y2 = map.minCoords[2] + segmentSize*(y + 1)
+				placeWall(x1, y1, x2, y2)
 			end
 		end
 		if x + 1 <= mapStructure.width and mapStructure.nodes[x + 1][y] or node then
 			placeCorner = true
 			if not rightOpen then
-				placeWall(map.minCoords[1] + segmentSize*(x + 1), map.minCoords[2] + segmentSize*y + 1, map.minCoords[1] + segmentSize*(x + 1), map.minCoords[2] + segmentSize*(y + 1) - 1)
+				local x1 = map.minCoords[1] + segmentSize*(x + 1)
+				local y1 = map.minCoords[2] + segmentSize*y + 1
+				local x2 = map.minCoords[1] + segmentSize*(x + 1)
+				local y2 = map.minCoords[2] + segmentSize*(y + 1) - 1
+				placeWall(x1, y1, x2, y2)
 			end
 		end
 		if x + 1 <= mapStructure.width and y + 1 <= mapStructure.height and mapStructure.nodes[x + 1][y + 1] or node then

@@ -22,4 +22,10 @@ function PhysicsSystem.findVectorBetween(speedF, angleF, speedT, angleT)
 	return Vector.vecToMagAngle(tX - fX, tY - fY)
 end
 
+function PhysicsSystem.findVectorInAngle(speed, angle, incidentAngle)
+	angle = Misc.simplifyAngle(angle - incidentAngle)
+	speedInAngle = speed*math.cos(angle)
+	return speedInAngle
+end
+
 return Vector

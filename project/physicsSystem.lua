@@ -6,6 +6,8 @@ function PhysicsSystem.new(turnDuration)
 end
 
 function PhysicsSystem.addBody(physicsSystem, body)
+	print("ID: " .. body.ID)
+	
 	table.insert(physicsSystem.bodies, body)
 end
 
@@ -15,6 +17,8 @@ function PhysicsSystem.determineFastestSpeed(physicsSystem)
 		local body = physicsSystem.bodies[i]
 		physicsSystem.fastestSpeed = math.max(physicsSystem.fastestSpeed, body.speed)
 	end
+	print(physicsSystem.fastestSpeed)
+	print(#physicsSystem.bodies)
 end
 
 function PhysicsSystem.update(world, dt)
@@ -27,6 +31,10 @@ function PhysicsSystem.update(world, dt)
 		end
 		i = i - 1
 	end
+	
+	Explosion.updateExplosions(world.explosions, dt)
+	Weapon.updateBullets(world.bullets, dt)
+	
 	Map.cleanAllTiles(world.map)
 end
 
@@ -70,7 +78,7 @@ local function flipAngleOverIncident(angle, incident)
 	return Misc.simplifyAngle(incident + incidentDiff)
 end
 
-function PhysicsSystem.processCollision(body, newX, newY, tile)
+function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions)
 	local collidingLayers = Layers.getCollidingLayers(body.layer)
 	
 	local colliders = {}
@@ -84,28 +92,51 @@ function PhysicsSystem.processCollision(body, newX, newY, tile)
 		local totalEnergy = 0
 		local totalAngle = 0
 		local totalMass = 0
+		local totalHealth = 0
+		local totalDamage = 0
 		local averageBounce = body.bounce
 		for i = 1, #colliders do
 			local collider = colliders[i]
 			totalEnergy, totalAngle = Vector.addVectors(totalEnergy, totalAngle, collider.speed*collider.mass, collider.angle)
 			averageBounce = averageBounce + collider.bounce
 			totalMass = totalMass + collider.mass
+			totalHealth = totalHealth + collider.health
+			totalDamage = totalDamage + (collider.speed - collider.speedThreshold)/collider.speedPerHealth
 		end
 		averageBounce = averageBounce/(#colliders + 1)
 		
 		local incident = findIncident(body, newX, newY, tile)
 		
-		for i = 1, #colliders do
-			local collider = colliders[i]
-			local ratio = collider.mass/totalMass
-			collider.speed = collider.speed*averageBounce
-			collider.angle = flipAngleOverIncident(collider.angle, incident)
-			Body.impartForce(collider, (1 - averageBounce)*ratio*body.speed*body.mass, body.angle)
+		local totalEnergyInAngle = math.max(PhysicsSystem.findVectorInAngle(totalEnergy, totalAngle, incident), 0)
+		totalDamage = math.min(math.max(PhysicsSystem.findVectorInAngle(totalDamage, totalAngle, incident), 0), totalHealth)
+		local bodyEnergyInAngle = math.max(PhysicsSystem.findVectorInAngle(body.speed*body.mass, body.angle, incident + math.pi), 0)
+		local bodyDamage = math.min((bodyEnergyInAngle/body.mass - body.speedThreshold)/body.speedPerHealth, body.health)
+		
+		if totalDamage > body.health then
+			totalEnergyInAngle = totalEnergyInAngle*(body.health/totalDamage)
+		elseif bodyDamage > totalHealth then
+			bodyEnergyInAngle = bodyEnergyInAngle*(totalHealth/bodyDamage)
 		end
 		
-		body.speed = body.speed*averageBounce
-		body.angle = flipAngleOverIncident(body.angle + math.pi, incident)
-		Body.impartForce(body, (1 - averageBounce)*totalEnergy, totalAngle)
+		if not ignoreCollisions then
+			for i = 1, #colliders do
+				local collider = colliders[i]
+				local ratio = collider.mass/totalMass
+				--collider.speed = collider.speed - (bodyEnergyInAngle/collider.mass)*ratio
+				--collider.angle = flipAngleOverIncident(collider.angle, incident)
+				Body.impartForce(collider, (1 + averageBounce)*collider.mass*math.max(PhysicsSystem.findVectorInAngle(collider.speed, collider.angle, incident), 0), incident + math.pi)
+				Body.impartForce(collider, (1 - averageBounce)*ratio*bodyEnergyInAngle, body.angle)
+				Body.damage(collider, bodyDamage*ratio)
+				Body.damage(collider, totalDamage*ratio)
+			end
+		end
+		
+		--body.speed = body.speed*averageBounce
+		--body.angle = flipAngleOverIncident(body.angle + math.pi, incident)
+		Body.impartForce(body, (1 + averageBounce)*bodyEnergyInAngle, incident)
+		Body.impartForce(body, (1 - averageBounce)*totalEnergyInAngle, totalAngle)
+		Body.damage(body, totalDamage)
+		Body.damage(body, bodyDamage)
 		
 		return true
 	end

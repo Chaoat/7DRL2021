@@ -1,14 +1,37 @@
 local Body = {}
 
 local ID = 0
-function Body.new(x, y, world, health, mass, bounce, layer)
-	local body = {x = x, y = y, health = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = world.map, world = world, layer = layer, ID = ID, moveCallBacks = {}}
+function Body.newRaw(health, mass, bounce, layer)
+	local body = {x = nil, y = nil, health = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 10}
 	ID = ID + 1
-	PhysicsSystem.addBody(world.physicsSystem, body)
-	
-	Body.move(body, x, y)
+	return body
+end
+
+function Body.duplicateRaw(body)
+	local copy = {}
+	for key, value in pairs(body) do
+		copy[key] = value
+	end
+	body.ID = ID
+	ID = ID + 1
+	return copy
+end
+
+function Body.new(x, y, world, health, mass, bounce, layer)
+	local body = Body.newRaw(health, mass, bounce, layer)
+	Body.placeInWorld(body, x, y, world)
 	
 	return body
+end
+
+function Body.placeInWorld(body, x, y, world)
+	body.map = world.map
+	body.world = world
+	body.x = x
+	body.y = y
+	
+	PhysicsSystem.addBody(world.physicsSystem, body)
+	Body.move(body, x, y)
 end
 
 function Body.addMoveCallback(body, func)
@@ -22,7 +45,7 @@ function Body.impartForce(body, force, angle)
 	body.angle = nAngle
 end
 
-function Body.update(body, dt)
+function Body.update(body, dt, ignoreCollisions)
 	local nextX = body.x + dt*body.speed*math.cos(body.angle)
 	local nextY = body.y + dt*body.speed*math.sin(body.angle)
 	
@@ -61,14 +84,22 @@ function Body.destroy(body)
 	end
 end
 
-function Body.move(body, newX, newY)
+function Body.damage(body, damage)
+	body.health = body.health - damage
+	if body.health <= 0 then
+		body.health = 0
+		Body.destroy(body)
+	end
+end
+
+function Body.move(body, newX, newY, ignoreCollisions)
 	local oldTile = body.tile
 	local nextTile = Map.getTile(body.map, newX, newY)
 	
 	local collided = false
 	if not Tile.compare(nextTile, oldTile) then
 		local map = body.map
-		if PhysicsSystem.processCollision(body, newX, newY, nextTile) then
+		if PhysicsSystem.processCollision(body, newX, newY, nextTile, ignoreCollisions) then
 			collided = true
 		else
 			if oldTile then

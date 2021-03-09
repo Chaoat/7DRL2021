@@ -60,6 +60,9 @@ function Map.getTile(map, x, y)
 	local tX = Misc.round(x)
 	local tY = Misc.round(y)
 	if tX >= map.minCoords[1] and tX <= map.maxCoords[1] and tY >= map.minCoords[2] and tY <= map.maxCoords[2] then
+		if map.tileMap[tX][tY] == nil then
+			error("uh oh")
+		end
 		return map.tileMap[tX][tY]
 	else
 		return Tile.new(x, y, 0, map)

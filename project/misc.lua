@@ -53,4 +53,17 @@ function Misc.binaryInsert(list, element, comparitor)
 	return first
 end
 
+function Misc.blendColours(colour1, colour2, ratio)
+	local rInverse = 1 - ratio
+	return {colour1[1]*rInverse + colour2[1]*ratio, colour1[2]*rInverse + colour2[2]*ratio, colour1[3]*rInverse + colour2[3]*ratio, colour1[4]*rInverse + colour2[4]*ratio}
+end
+
+function Misc.addColours(colour, addedColour)
+	local ratio = colour[4]/(colour[4] + addedColour[4])
+	colour[1] = colour[1]*ratio + addedColour[1]*(1 - ratio)
+	colour[2] = colour[2]*ratio + addedColour[2]*(1 - ratio)
+	colour[3] = colour[3]*ratio + addedColour[3]*(1 - ratio)
+	colour[4] = math.min(colour[4] + addedColour[4], 1)
+end
+
 return Misc

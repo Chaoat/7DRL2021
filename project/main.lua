@@ -20,8 +20,16 @@ MapGeneration = require("MapGeneration")
 Random = require("randomFunctions")
 Weapon = require("weapon")
 Explosion = require("explosion")
+Font = require("font")
+Letter = require("letter")
+Shader = require("shader")
+TileColour = require("tileColour")
+Interface = require("interface")
+TrackingLines = require("trackingLines")
 
 local profile = require("profile")
+
+GlobalClock = 0
 
 local globalGame
 local testStructure
@@ -33,6 +41,8 @@ function love.load()
 end
 
 function love.update(dt)
+	GlobalClock = GlobalClock + dt
+	
 	Game.update(globalGame, dt)
 	
 	profile.update(dt)

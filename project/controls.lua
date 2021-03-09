@@ -37,6 +37,19 @@ addControls("botLeft", {"kp1"})
 addControls("bot", {"kp2"})
 addControls("botRight", {"kp3"})
 
+addControls("weapon1", {"1"})
+addControls("weapon2", {"2"})
+addControls("weapon3", {"3"})
+addControls("weapon4", {"4"})
+addControls("weapon5", {"5"})
+addControls("weapon6", {"6"})
+addControls("weapon7", {"7"})
+addControls("weapon8", {"8"})
+addControls("weapon9", {"9"})
+addControls("weapon10", {"0"})
+
+addControls("chainFire", {"lshift"})
+
 function Controls.keyToControls(key)
 	--Returns the controls attached to a certain key
 	local list = {}
@@ -61,6 +74,16 @@ function Controls.checkControl(key, control)
 		list = controlTable[key]
 	end
 	return list[control]
+end
+
+function Controls.checkControlHeld(control)
+	for i = 1, #inverseControlTable[control] do
+		local key = inverseControlTable[control][i]
+		if love.keyboard.isDown(key) then
+			return true
+		end
+	end
+	return false
 end
 
 function Controls.enableControl(control, enabled)

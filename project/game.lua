@@ -1,10 +1,12 @@
 local Game = {}
 
+GlobalTurnTime = 0.2
+
 function Game.new()
 	local mapRadius = 7
 	local segmentSize = 6
-	local game = {world = World.new(mapRadius, segmentSize), turnSystem = TurnCalculation.newSystem(0.2), mainCamera = Camera.new(800, 600, 20, 20)}
-	game.player = Player.new((mapRadius + 0.5)*segmentSize, 0, game.world)
+	local game = {world = World.new(mapRadius, segmentSize), turnSystem = TurnCalculation.newSystem(GlobalTurnTime), mainCamera = Camera.new(800, 450, 20, 20)}
+	game.player = Player.new((mapRadius + 0.5)*segmentSize - 1, 0, game.world)
 	game.mainCamera.followingBody = game.player.character.body
 	return game
 end
@@ -12,17 +14,17 @@ end
 function Game.update(game, dt)
 	TurnCalculation.updateTurn(game, dt)
 	Camera.update(game.mainCamera, dt)
-	print(game.player.character.body.health)
 end
 
 function Game.draw(game)
 	--print("newDrawStep")
 	Camera.reset(game.mainCamera)
 	
-	World.draw(game.world, game.mainCamera)
-	Body.debugDrawBodies(game.world.physicsSystem.bodies, game.mainCamera)
+	World.draw(game.world, not game.turnSystem.turnRunning, game.mainCamera)
 	
 	Camera.draw(0, 0, game.mainCamera)
+	
+	Interface.drawPlayerWeapons(0, 450, game.player, 100, 800)
 end
 
 function Game.handleKeyboardInput(game, key)
