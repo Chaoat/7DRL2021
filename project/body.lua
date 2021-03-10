@@ -2,7 +2,7 @@ local Body = {}
 
 local ID = 0
 function Body.newRaw(health, mass, bounce, layer)
-	local body = {x = nil, y = nil, health = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 10}
+	local body = {x = nil, y = nil, health = health, maxHealth = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 10, parent = nil}
 	ID = ID + 1
 	return body
 end
@@ -53,7 +53,7 @@ function Body.update(body, dt, ignoreCollisions)
 		body.speed = body.speed*(1 - dt*body.friction)
 	end
 	
-	if not Body.move(body, nextX, nextY) then
+	if not Body.move(body, nextX, nextY, ignoreCollisions) then
 		--Body.update(body, dt)
 	end
 	
@@ -93,33 +93,35 @@ function Body.damage(body, damage)
 end
 
 function Body.move(body, newX, newY, ignoreCollisions)
-	local oldTile = body.tile
-	local nextTile = Map.getTile(body.map, newX, newY)
-	
-	local collided = false
-	if not Tile.compare(nextTile, oldTile) then
-		local map = body.map
-		if PhysicsSystem.processCollision(body, newX, newY, nextTile, ignoreCollisions) then
-			collided = true
-		else
-			if oldTile then
-				Map.addTileToCleanQueue(map, oldTile, body.layer)
-			end
-			body.tile = nextTile
-			Tile.addBody(nextTile, body)
-			
-			for i = 1, #body.moveCallBacks do
-				body.moveCallBacks[i](oldTile)
+	if not body.destroy then
+		local oldTile = body.tile
+		local nextTile = Map.getTile(body.map, newX, newY)
+		
+		local collided = false
+		if not Tile.compare(nextTile, oldTile) then
+			local map = body.map
+			if PhysicsSystem.processCollision(body, newX, newY, nextTile, ignoreCollisions) then
+				collided = true
+			else
+				if oldTile then
+					Map.addTileToCleanQueue(map, oldTile, body.layer)
+				end
+				body.tile = nextTile
+				Tile.addBody(nextTile, body)
+				
+				for i = 1, #body.moveCallBacks do
+					body.moveCallBacks[i](oldTile)
+				end
 			end
 		end
-	end
-	
-	if not collided then
-		body.x = newX
-		body.y = newY
-		return true
-	else
-		return false
+		
+		if not collided then
+			body.x = newX
+			body.y = newY
+			return true
+		else
+			return false
+		end
 	end
 end
 

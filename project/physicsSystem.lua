@@ -6,7 +6,7 @@ function PhysicsSystem.new(turnDuration)
 end
 
 function PhysicsSystem.addBody(physicsSystem, body)
-	print("ID: " .. body.ID)
+	--print("ID: " .. body.ID)
 	
 	table.insert(physicsSystem.bodies, body)
 end
@@ -17,8 +17,8 @@ function PhysicsSystem.determineFastestSpeed(physicsSystem)
 		local body = physicsSystem.bodies[i]
 		physicsSystem.fastestSpeed = math.max(physicsSystem.fastestSpeed, body.speed)
 	end
-	print(physicsSystem.fastestSpeed)
-	print(#physicsSystem.bodies)
+	--print(physicsSystem.fastestSpeed)
+	--print(#physicsSystem.bodies)
 end
 
 function PhysicsSystem.update(world, dt)
@@ -51,7 +51,7 @@ local function findIncident(body, newX, newY, tile)
 			if addDiff > negDiff then
 				return addAngle
 			else
-				return negDiff
+				return negAngle
 			end
 		end
 		return false
@@ -84,7 +84,9 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 	local colliders = {}
 	for i = 1, #collidingLayers do
 		for j = 1, #tile.bodies[collidingLayers[i]] do
-			table.insert(colliders, tile.bodies[collidingLayers[i]][j])
+			if not tile.bodies[collidingLayers[i]][j].simulation then
+				table.insert(colliders, tile.bodies[collidingLayers[i]][j])
+			end
 		end
 	end
 	
@@ -118,7 +120,7 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 			bodyEnergyInAngle = bodyEnergyInAngle*(totalHealth/bodyDamage)
 		end
 		
-		if not ignoreCollisions then
+		if not body.simulation and not ignoreCollisions then
 			for i = 1, #colliders do
 				local collider = colliders[i]
 				local ratio = collider.mass/totalMass
@@ -133,6 +135,7 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		
 		--body.speed = body.speed*averageBounce
 		--body.angle = flipAngleOverIncident(body.angle + math.pi, incident)
+		--print(incident/math.pi .. " : " .. bodyEnergyInAngle .. " : " .. body.layer)
 		Body.impartForce(body, (1 + averageBounce)*bodyEnergyInAngle, incident)
 		Body.impartForce(body, (1 - averageBounce)*totalEnergyInAngle, totalAngle)
 		Body.damage(body, totalDamage)

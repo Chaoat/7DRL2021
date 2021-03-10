@@ -1,8 +1,10 @@
 local World = {}
 
 function World.new(mapRadius, segmentSize)
-	local world = {physicsSystem = PhysicsSystem.new(), map = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}}
+	local world = {physicsSystem = PhysicsSystem.new(), map = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}, enemies = {}}
 	MapGeneration.generateMapFromStructure(MapGeneration.generateMapStructure(mapRadius), segmentSize, world)
+	
+	Enemy.spawnEnemy("harpy", 30, 0, world)
 	
 	return world
 end

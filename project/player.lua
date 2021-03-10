@@ -1,8 +1,16 @@
 local Player = {}
 
+local function updatePlayerTargettingLine(player)
+	if player.targettingLine then
+		local playerTile = player.character.body.tile
+		local newAngle = math.atan2(player.targettingCoords[2] - player.character.body.y, player.targettingCoords[1] - player.character.body.x)
+		TrackingLines.updatePoints(player.targettingLine, playerTile.x, playerTile.y, newAngle)
+	end
+end
+
 function Player.new(x, y, world)
-	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}, 20, 20))
-	local player = {character = character, viewRange = 20, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false}
+	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}))
+	local player = {character = character, viewRange = 20, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
 	
 	local function onMove(oldTile)
 		if oldTile then
@@ -14,10 +22,7 @@ function Player.new(x, y, world)
 		local playerTile = player.character.body.tile
 		Vision.checkVisible(world, playerTile.x, playerTile.y, player.viewRange)
 		
-		if player.targettingLine then
-			local newAngle = math.atan2(player.targettingCoords[2] - player.character.body.y, player.targettingCoords[1] - player.character.body.x)
-			TrackingLines.updatePoints(player.targettingLine, playerTile.x, playerTile.y, newAngle)
-		end
+		updatePlayerTargettingLine(player)
 	end
 	
 	onMove()
@@ -47,25 +52,34 @@ function Player.getWeapon(player, weaponName, ammo)
 end
 
 local function playerMove(player, turnSystem, xDir, yDir)
-	Character.moveCharacter(player.character, xDir, yDir)
-	
-	--TurnCalculation.addWeaponDischarge(function()
-	--	return Weapon.boltCaster(player.character.body.x, player.character.body.y, 0, 0, player.character.body.world)
-	--end, 0, turnSystem)
-	
-	if player.firingWeapon then
-		local weapon = player.weapons[player.firingWeapon]
-		TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body.world), 0, turnSystem)
-		weapon.ammo = weapon.ammo - 1
+	if player.selectingTarget then
+		player.targettingCoords = {player.targettingCoords[1] + xDir, player.targettingCoords[2] + yDir}
+		updatePlayerTargettingLine(player)
+	else
+		Character.moveCharacter(player.character, xDir, yDir)
 		
-		if not player.chainFiring or weapon.ammo <= 0 then
-			player.firingWeapon = false
-			player.targettingLine.destroy = true
-			player.targettingLine = false
+		if player.firingWeapon then
+			local weapon = player.weapons[player.firingWeapon]
+			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body.world), 0, turnSystem)
+			weapon.ammo = weapon.ammo - 1
+			
+			if not player.chainFiring or weapon.ammo <= 0 then
+				player.firingWeapon = false
+				player.targettingLine.destroy = true
+				player.targettingLine = false
+			end
 		end
+		
+		TurnCalculation.runTurn(turnSystem, player.character.world)
 	end
-	
-	TurnCalculation.runTurn(turnSystem, player.character.world)
+end
+
+local function playerTrackCharacter(player)
+	if player.targettingCharacter and player.firingWeapon then
+		local weaponBullet = Weapon.getSimulationTemplate(player.weapons[player.firingWeapon].name)
+		player.targettingCoords = TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
+		updatePlayerTargettingLine(player)
+	end
 end
 
 local function playerSelectWeapon(player, index)
@@ -82,7 +96,33 @@ local function playerSelectWeapon(player, index)
 		player.targettingLine = Weapon.simulateFire(player.weapons[index].name, body.x, body.y, player.targettingCoords[1], player.targettingCoords[2], body.world)
 		player.firingWeapon = index
 		player.chainFiring = Controls.checkControlHeld("chainFire")
+		
+		playerTrackCharacter(player)
 	end
+end
+
+local function startTargetSelection(player)
+	if not player.firingWeapon and not player.selectingTarget then
+		player.targettingCoords = {player.character.body.x, player.character.body.y}
+	end
+	player.selectingTarget = true
+end
+
+local function toggleSelectingTarget(player)
+	if not player.selectingTarget then
+		startTargetSelection(player)
+	else
+		player.selectingTarget = false
+		local tile = Map.getTile(player.character.body.map, player.targettingCoords[1], player.targettingCoords[2])
+		if #tile.bodies["character"] > 0 then
+			player.targettingCharacter = tile.bodies["character"][1].parent
+			playerTrackCharacter(player)
+		end
+	end
+end
+
+function Player.endTurnUpdate(player)
+	playerTrackCharacter(player)
 end
 
 function Player.keyInput(turnSystem, player, key)
@@ -104,12 +144,28 @@ function Player.keyInput(turnSystem, player, key)
 		playerMove(player, turnSystem, 0, 1)
 	elseif Controls.checkControl(key, "botRight") then
 		playerMove(player, turnSystem, 1, 1)
+	elseif Controls.checkControl(key, "selectTarget") then
+		toggleSelectingTarget(player)
 	else
 		for i = 1, #player.weapons do
 			if Controls.checkControl(key, "weapon" .. i) then
+				startTargetSelection(player)
 				playerSelectWeapon(player, i)
 			end
 		end
+	end
+end
+
+function Player.drawTargettingHighlight(player, camera)
+	if player.selectingTarget then
+		local tile = Map.getTile(player.character.body.map, player.targettingCoords[1], player.targettingCoords[2])
+		
+		Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+			love.graphics.setColor(1, 0, 0, 1)
+			love.graphics.setLineStyle("rough")
+			love.graphics.setLineWidth(2)
+			love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+		end)
 	end
 end
 

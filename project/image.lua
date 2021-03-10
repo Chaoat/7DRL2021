@@ -40,7 +40,10 @@ function Image.canvasToImage(canvas)
 	return {image = newCanvas, width = width, height = height}
 end
 
-function Image.letterToImage(letter, colour, width, height)
+function Image.letterToImage(letter, colour)
+	local width = GlobalTileDims[1]
+	local height = GlobalTileDims[2]
+	
 	Font.setFont("437", 1.5*height)
 	
 	local canvas = CanvasCache.getCanvas(width, height)

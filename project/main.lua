@@ -14,7 +14,6 @@ Layers = require("layers")
 Character = require("character")
 Vector = require("vector")
 Player = require("player")
-Wall = require("wall")
 Vision = require("vision")
 MapGeneration = require("MapGeneration")
 Random = require("randomFunctions")
@@ -26,6 +25,9 @@ Shader = require("shader")
 TileColour = require("tileColour")
 Interface = require("interface")
 TrackingLines = require("trackingLines")
+
+Wall = require("wall")
+Enemy = require("enemy")
 
 local profile = require("profile")
 

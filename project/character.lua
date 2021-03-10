@@ -3,6 +3,10 @@ local Character = {}
 function Character.new(body, stepStrength, image)
 	local world = body.world
 	local character = {body = body, stepStrength = stepStrength, image = image, targetX = body.x, targetY = body.y, world = world, lostFooting = false}
+	body.parent = character
+	character.trackingLine = TrackingLines.new(body.x, body.y, 0, body, GlobalTurnTime, {1, 1, 0, 0.4}, world)
+	TrackingLines.clear(character.trackingLine)
+	character.body.friction = 1
 	
 	table.insert(world.characters, character)
 	
@@ -25,6 +29,22 @@ function Character.update(character, turnTimeLeft, dt)
 		end
 	elseif character.body.tile.floored and character.body.speed <= character.stepStrength/5 then
 		character.lostFooting = false
+		character.targetX = Misc.round(character.body.x)
+		character.targetY = Misc.round(character.body.y)
+	end
+end
+
+function Character.updateCharacterTrackingLines(characters)
+	for i = 1, #characters do
+		local character = characters[i]
+		if character.lostFooting then
+			TrackingLines.changeSpeed(character.trackingLine, character.body.speed)
+			TrackingLines.updatePoints(character.trackingLine, character.body.x, character.body.y, character.body.angle)
+		elseif character.targetX ~= character.body.tile.x or character.targetY ~= character.body.tile.y then
+			TrackingLines.singlePoint(character.trackingLine, {character.targetX, character.targetY})
+		else
+			TrackingLines.clear(character.trackingLine)
+		end
 	end
 end
 
@@ -36,8 +56,28 @@ end
 function Character.drawCharacters(characters, camera)
 	for i = 1, #characters do
 		local character = characters[i]
-		love.graphics.setColor(1, 1, 1, 1)
-		Image.drawImage(character.image, camera, character.body.x, character.body.y, 0)
+		local tile = Map.getTile(character.body.map, character.body.x, character.body.y)
+		if tile.visible then
+			if character.body.destroy then
+				love.graphics.setColor(0.3, 0.3, 0.3, 1)
+			else
+				love.graphics.setColor(1, 1, 1, 1)
+			end
+			Image.drawImage(character.image, camera, character.body.x, character.body.y, 0)
+			
+			local body = character.body
+			if body.health < body.maxHealth then
+				Camera.drawTo(camera, body.x, body.y, function(drawX, drawY)
+					love.graphics.setColor(1, 0, 0, 1)
+					love.graphics.setLineStyle("rough")
+					love.graphics.setLineWidth(2)
+					love.graphics.circle("line", drawX, drawY, 11)
+					
+					love.graphics.setColor(0, 1, 0, 1)
+					love.graphics.arc("line", "open", drawX, drawY, 11, -math.pi/2, -math.pi/2 - (body.health/body.maxHealth)*(2*math.pi), 10)
+				end)
+			end
+		end
 	end
 end
 

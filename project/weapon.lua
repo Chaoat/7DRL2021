@@ -15,7 +15,7 @@ end
 
 local weapons = {}
 local function addWeapon(weaponName, fireFunc, weaponColour, bodyTemplate)
-	local weapon = {weaponName = weaponName, fireFunc = fireFunc, weaponColour = weaponColour, printColumns = {}, fireSpeed = fireSpeed, bodyTemplate = bodyTemplate}
+	local weapon = {weaponName = weaponName, fireFunc = fireFunc, weaponColour = weaponColour, printColumns = {}, bodyTemplate = bodyTemplate}
 	
 	local lastCapital = 1
 	for i = 2, #weaponName do
@@ -40,8 +40,8 @@ do --initialize weapons
 		addWeapon("Bolt Caster", 
 		function(x, y, targetX, targetY, world)
 			local angle = math.atan2(targetY - y, targetX - x)
-			newBullet(x, y, 1, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0, 0.8, 0, 1}, 20, 20), 20, function(bullet)
-				Explosion.explode(bullet.x, bullet.y, 2, 20, world)
+			newBullet(x, y, 1, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0, 0.8, 0, 1}), 20, function(bullet)
+				Explosion.explode(bullet.x, bullet.y, 2, 1, 20, 0, world)
 			end)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
@@ -51,12 +51,17 @@ end
 function Weapon.simulateFire(weaponName, x, y, targetX, targetY, world)
 	local weapon = weapons[weaponName]
 	local angle = math.atan2(targetY - y, targetX - x)
-	return TrackingLines.new(x, y, angle, weapon.bodyTemplate, GlobalTurnTime, world)
+	return TrackingLines.new(x, y, angle, weapon.bodyTemplate, GlobalTurnTime, {1, 0, 0, 0.4}, world)
 end
 
 function Weapon.getPrintInfo(weaponName)
 	local weapon = weapons[weaponName]
 	return weapon.printColumns, weapon.weaponColour
+end
+
+function Weapon.getSimulationTemplate(weaponName)
+	local weapon = weapons[weaponName]
+	return weapon.bodyTemplate
 end
 
 function Weapon.prepareWeaponFire(weaponName, x, y, targetX, targetY, world)

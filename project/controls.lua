@@ -48,6 +48,8 @@ addControls("weapon8", {"8"})
 addControls("weapon9", {"9"})
 addControls("weapon10", {"0"})
 
+addControls("selectTarget", {"f"})
+
 addControls("chainFire", {"lshift"})
 
 function Controls.keyToControls(key)

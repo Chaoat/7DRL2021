@@ -66,10 +66,14 @@ function Tile.draw(tile, camera)
 	if tile.visible and tile.floored then
 		local tileImage = Image.getImage("tiles/floor")
 		local parity = (tile.x + tile.y)%2
-		local colour = {0.8 - 0.4*parity, 0.8 - 0.4*parity, 0.8 - 0.4*parity, 1}
+		local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
 		
-		love.graphics.setColor(colour)
-		Image.drawImage(tileImage, camera, tile.x, tile.y, 0)
+		Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+			love.graphics.setColor(colour)
+			love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+			love.graphics.setColor({0.1, 0.1, 0.1, 1})
+			love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+		end)
 		
 		if tile.trailColour[4] > 0 then
 			local dt = gc - tile.lastTrailUpdate

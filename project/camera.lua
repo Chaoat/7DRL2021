@@ -6,7 +6,7 @@ function Camera.new(cameraWidth, cameraHeight, tileWidth, tileHeight)
 	return camera
 end
 
-local function getDrawCoords(logicX, logicY, camera)
+function Camera.getDrawCoords(logicX, logicY, camera)
 	local drawX = (logicX - camera.x)*camera.tileDims[1] + camera.canvasDims[1]/2
 	local drawY = (logicY - camera.y)*camera.tileDims[2] + camera.canvasDims[2]/2
 	return drawX, drawY
@@ -21,7 +21,7 @@ end
 
 function Camera.drawTo(camera, logicX, logicY, drawFunc)
 	--drawFunc takes a drawX and drawY, nothing else drawFunc(drawX, drawY)
-	local drawX, drawY = getDrawCoords(logicX, logicY, camera)
+	local drawX, drawY = Camera.getDrawCoords(logicX, logicY, camera)
 	
 	love.graphics.setCanvas(camera.canvas)
 	drawFunc(drawX, drawY)
