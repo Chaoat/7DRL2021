@@ -5,6 +5,11 @@ function World.new(mapRadius, segmentSize)
 	MapGeneration.generateMapFromStructure(MapGeneration.generateMapStructure(mapRadius), segmentSize, world)
 	
 	Enemy.spawnEnemy("harpy", 30, 0, world)
+	Enemy.spawnEnemy("harpy", 31, 0, world)
+	Enemy.spawnEnemy("harpy", 31, 1, world)
+	Enemy.spawnEnemy("harpy", 31, 2, world)
+	Enemy.spawnEnemy("harpy", 30, 1, world)
+	Enemy.spawnEnemy("harpy", 29, 0, world)
 	
 	return world
 end

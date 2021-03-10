@@ -101,7 +101,12 @@ function Body.move(body, newX, newY, ignoreCollisions)
 		if not Tile.compare(nextTile, oldTile) then
 			local map = body.map
 			if PhysicsSystem.processCollision(body, newX, newY, nextTile, ignoreCollisions) then
-				collided = true
+				if oldTile then
+					collided = true
+				else
+					body.tile = nextTile
+					Tile.addBody(nextTile, body)
+				end
 			else
 				if oldTile then
 					Map.addTileToCleanQueue(map, oldTile, body.layer)

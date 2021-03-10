@@ -6,6 +6,8 @@ function Explosion.explode(x, y, radius, mass, speed, damage, world)
 	for i = 1, nParticles do
 		local angle = 2*math.pi*(i/nParticles)
 		local body = Body.new(x, y, world, partDamage, mass, 1, "explosion")
+		body.speedPerHealth = 1
+		body.speedThreshold = 0
 		local particle = {body = body, tileColour = TileColour.new({1, 1, 0.8, 1}, {1, 0.5, 0.1, 0.7}, radius/speed)}
 		Body.impartForce(body, speed*mass, angle)
 		body.duration = radius/speed

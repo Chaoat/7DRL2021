@@ -66,7 +66,7 @@ function Character.drawCharacters(characters, camera)
 			Image.drawImage(character.image, camera, character.body.x, character.body.y, 0)
 			
 			local body = character.body
-			if body.health < body.maxHealth then
+			if body.health < body.maxHealth and not body.destroy then
 				Camera.drawTo(camera, body.x, body.y, function(drawX, drawY)
 					love.graphics.setColor(1, 0, 0, 1)
 					love.graphics.setLineStyle("rough")

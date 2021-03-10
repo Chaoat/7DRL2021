@@ -1,11 +1,17 @@
 local Weapon = {}
 
-local function newBullet(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, destroyFunction)
+local function newBullet(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction)
 	local xOff, yOff = Misc.angleToDir(angle)
 	local body = Body.new(x + xOff, y + yOff, world, health, mass, bounce, "bullet")
-	local bullet = {body = body, image = image}
+	body.speedPerHealth = 1
+	body.speedThreshold = 0
+	local bullet = {body = body, image = image, trailColour = trailColour}
 	Body.impartForce(body, speed*mass, angle)
 	body.minSpeed = minSpeed
+	
+	if body.tile == nil then
+		error("what")
+	end
 	
 	body.destroyFunction = destroyFunction
 	
@@ -31,7 +37,15 @@ local function addWeapon(weaponName, fireFunc, weaponColour, bodyTemplate)
 	weapons[weaponName] = weapon
 end
 
-do --initialize weapons
+local function fireOverSpread(centerAngle, arc, nBullets, func)
+	local segmentSize = arc/nBullets
+	for i = 1, nBullets do
+		local angle = centerAngle + segmentSize*(i - nBullets/2 - 0.5) + Random.randomBetweenPoints(-segmentSize/2, segmentSize/2)
+		func(angle)
+	end
+end
+
+do --initialize player weapons
 	do --Bolt Caster
 		local bulletSpeed = 40
 		local simulationBody = Body.newRaw(1, 0.1, 0, "bullet")
@@ -40,18 +54,35 @@ do --initialize weapons
 		addWeapon("Bolt Caster", 
 		function(x, y, targetX, targetY, world)
 			local angle = math.atan2(targetY - y, targetX - x)
-			newBullet(x, y, 1, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0, 0.8, 0, 1}), 20, function(bullet)
-				Explosion.explode(bullet.x, bullet.y, 2, 1, 20, 0, world)
+			newBullet(x, y, 20, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.8, 0.8, 0.8, 1}), 20, {0.8, 0.6, 0, 0.8}, function(bullet)
+				Explosion.explode(bullet.x, bullet.y, 2, 1, 20, 80, world)
 			end)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
 	end
 end
 
+do --initialize enemy weapons
+	do --Harpy Blaster
+		local bulletSpeed = 30
+		addWeapon("Harpy Blaster", 
+		function(x, y, targetX, targetY, world)
+			local angle = math.atan2(targetY - y, targetX - x)
+			fireOverSpread(angle, math.pi/3, 4,
+			function(a)
+				newBullet(x, y, 8, 0.1, 0, world, bulletSpeed, a, Image.letterToImage(".", {1, 1, 0, 1}), 15, {0.8, 0.8, 0, 0.8})
+			end)
+		end, 
+		{0, 1, 0, 1}, nil)
+	end
+end
+
 function Weapon.simulateFire(weaponName, x, y, targetX, targetY, world)
 	local weapon = weapons[weaponName]
-	local angle = math.atan2(targetY - y, targetX - x)
-	return TrackingLines.new(x, y, angle, weapon.bodyTemplate, GlobalTurnTime, {1, 0, 0, 0.4}, world)
+	if weapon.bodyTemplate then
+		local angle = math.atan2(targetY - y, targetX - x)
+		return TrackingLines.new(x, y, angle, weapon.bodyTemplate, GlobalTurnTime, {1, 0, 0, 0.4}, world)
+	end
 end
 
 function Weapon.getPrintInfo(weaponName)
@@ -77,7 +108,7 @@ function Weapon.updateBullets(bullets, dt)
 	while i > 0 do
 		local bullet = bullets[i]
 		
-		Tile.addTrail(bullet.body.tile, {1, 0, 0, 1})
+		Tile.addTrail(bullet.body.tile, bullet.trailColour)
 		
 		if bullet.body.destroy then
 			table.remove(bullets, i)

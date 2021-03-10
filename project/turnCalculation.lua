@@ -87,6 +87,8 @@ function TurnCalculation.endTurn(game)
 		turnSystem.weaponDischarges[i].triggerTime = turnSystem.weaponDischarges[i].triggerTime - turnSystem.turnDuration
 	end
 	
+	Enemy.decideActions(world.enemies, player, turnSystem)
+	
 	Character.updateCharacterTrackingLines(world.characters)
 	Player.endTurnUpdate(player)
 	turnSystem.turnRunning = false
