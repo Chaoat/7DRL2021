@@ -9,6 +9,12 @@ function Enemy.new(name, x, y, character, aiFunction)
 	return enemy
 end
 
+local function pathfindToPlayer(enemy, player, speed)
+	local path = Pathfinding.findPath(enemy.character.body.world.pathfindingMap, {enemy.character.body.tile.x, enemy.character.body.tile.y}, {player.character.body.tile.x, player.character.body.tile.y}, 1)
+	local targetCoords = path[math.min(speed + 1, #path)]
+	return targetCoords
+end
+
 local enemies = {}
 local function newEnemyKind(name, spawnFunc)
 	--spawnFunc(x, y, world)
@@ -35,6 +41,10 @@ do --initEnemies
 						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Harpy Blaster", body.x, body.y, playerBody.x, playerBody.y, body.world), 0, turnSystem)
 						enemy.reloading = 3
 					end
+				else
+					local targetCoords = pathfindToPlayer(enemy, player, 1)
+					character.targetX = targetCoords[1]
+					character.targetY = targetCoords[2]
 				end
 			end
 		end

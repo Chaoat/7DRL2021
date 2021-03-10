@@ -24,6 +24,8 @@ function Game.draw(game)
 	World.draw(game.world, not game.turnSystem.turnRunning, game.mainCamera)
 	Player.drawTargettingHighlight(game.player, game.mainCamera)
 	
+	--Pathfinding.visualizeMap(game.world.pathfindingMap, game.player.character.body, game.mainCamera)
+	
 	Camera.draw(0, 0, game.mainCamera)
 	
 	Interface.drawPlayerWeapons(0, 450, game.player)

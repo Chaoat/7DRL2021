@@ -105,7 +105,7 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 			totalHealth = totalHealth + collider.health
 			totalDamage = totalDamage + (collider.speed - collider.speedThreshold)/collider.speedPerHealth
 		end
-		averageBounce = averageBounce/(#colliders + 1)
+		averageBounce = math.min(averageBounce/(#colliders + 1), 1)
 		
 		local incident = findIncident(body, newX, newY, tile)
 		

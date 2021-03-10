@@ -106,6 +106,7 @@ local function startTargetSelection(player)
 		player.targettingCoords = {player.character.body.x, player.character.body.y}
 	end
 	player.selectingTarget = true
+	player.targettingCharacter = false
 end
 
 local function toggleSelectingTarget(player)

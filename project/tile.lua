@@ -61,6 +61,16 @@ function Tile.compare(tile1, tile2)
 	return false
 end
 
+function Tile.checkBlocking(tile, layer)
+	local collidingLayers = Layers.getCollidingLayers(layer)
+	for i = 1, #collidingLayers do
+		if #tile.bodies[collidingLayers[i]] > 0 then
+			return true
+		end
+	end
+	return false
+end
+
 function Tile.draw(tile, camera)
 	local gc = GlobalClock
 	if tile.visible and tile.floored then
