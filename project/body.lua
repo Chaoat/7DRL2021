@@ -7,6 +7,11 @@ function Body.newRaw(health, mass, bounce, layer)
 	return body
 end
 
+function Body.anchor(body)
+	body.mass = 99999
+	body.friction = 100
+end
+
 function Body.duplicateRaw(body)
 	local copy = {}
 	for key, value in pairs(body) do
@@ -50,7 +55,7 @@ function Body.update(body, dt, ignoreCollisions)
 	local nextY = body.y + dt*body.speed*math.sin(body.angle)
 	
 	if body.friction then
-		body.speed = body.speed*(1 - dt*body.friction)
+		body.speed = body.speed*math.max((1 - dt*body.friction), 0)
 	end
 	
 	if not Body.move(body, nextX, nextY, ignoreCollisions) then
@@ -74,10 +79,10 @@ end
 
 function Body.destroy(body)
 	if not body.destroy then
-		if body.destroyFunction then
+		body.destroy = true
+		if not body.simulation and body.destroyFunction then
 			body.destroyFunction(body)
 		end
-		body.destroy = true
 		if body.tile then
 			Map.addTileToCleanQueue(body.map, body.tile, body.layer)
 		end

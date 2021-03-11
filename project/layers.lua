@@ -26,10 +26,12 @@ local function addNewLayer(layerName, collisions)
 end
 
 addNewLayer("wall", 		{true})
-addNewLayer("bullet", 		{true, false})
-addNewLayer("character", 	{true, true, true})
-addNewLayer("explosion", 	{true, false, true, false})
-addNewLayer("pathfinder", 	{true, false, false, false})
+addNewLayer("bullet", 		{true, 	false})
+addNewLayer("character", 	{true, 	true, 	true})
+addNewLayer("explosion", 	{true, 	true, 	true, 	false})
+addNewLayer("pathfinder", 	{true, 	false, 	false, 	false, 	false})
+addNewLayer("bomb", 		{true, 	true, 	true, 	true, 	false, 	true})
+addNewLayer("item", 		{true, 	false, 	false, 	false, 	false, 	false, 	false})
 
 function Layers.getAllLayers()
 	return layerAddOrder

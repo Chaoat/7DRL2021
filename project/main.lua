@@ -26,6 +26,7 @@ TileColour = require("tileColour")
 Interface = require("interface")
 TrackingLines = require("trackingLines")
 Pathfinding = require("pathfinding")
+Chest = require("chest")
 
 Wall = require("wall")
 Enemy = require("enemy")

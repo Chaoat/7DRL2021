@@ -1,7 +1,7 @@
 local World = {}
 
 function World.new(mapRadius, segmentSize)
-	local world = {physicsSystem = PhysicsSystem.new(), map = nil, pathfindingMap = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}, enemies = {}}
+	local world = {physicsSystem = PhysicsSystem.new(), map = nil, pathfindingMap = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}, enemies = {}, chests = {}, items = {}}
 	MapGeneration.generateMapFromStructure(MapGeneration.generateMapStructure(mapRadius), segmentSize, world)
 	world.pathfindingMap = Pathfinding.newPathfindingMap(world.map)
 	
@@ -12,12 +12,15 @@ function World.new(mapRadius, segmentSize)
 	Enemy.spawnEnemy("harpy", 0, 1, world)
 	Enemy.spawnEnemy("harpy", -1, 0, world)
 	
+	Chest.new(40, 0, world)
+	
 	return world
 end
 
 function World.draw(world, drawTrackers, camera)
 	Map.drawTiles(world.map, camera)
 	Wall.drawWalls(world.walls, camera)
+	Chest.drawItems(world.items, camera)
 	Weapon.drawBullets(world.bullets, camera)
 	Explosion.drawExplosions(world.explosions, camera)
 	Character.drawCharacters(world.characters, camera)

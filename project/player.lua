@@ -23,12 +23,15 @@ function Player.new(x, y, world)
 		Vision.checkVisible(world, playerTile.x, playerTile.y, player.viewRange)
 		
 		updatePlayerTargettingLine(player)
+		Chest.getItemsOnTile(playerTile, player)
 	end
 	
 	onMove()
 	Body.addMoveCallback(character.body, onMove)
 	
 	Player.getWeapon(player, "Bolt Caster", 10)
+	Player.getWeapon(player, "Hydrocarbon Explosive", 10)
+	Player.getWeapon(player, "Force Wave", 10)
 	
 	return player
 end
@@ -60,12 +63,14 @@ local function playerMove(player, turnSystem, xDir, yDir)
 		
 		if player.firingWeapon then
 			local weapon = player.weapons[player.firingWeapon]
-			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body.world), 0, turnSystem)
+			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body, player.character.body.world), 0, turnSystem)
 			weapon.ammo = weapon.ammo - 1
 			
 			if not player.chainFiring or weapon.ammo <= 0 then
 				player.firingWeapon = false
-				player.targettingLine.destroy = true
+				if player.targettingLine then
+					player.targettingLine.destroy = true
+				end
 				player.targettingLine = false
 			end
 		end
@@ -77,27 +82,10 @@ end
 local function playerTrackCharacter(player)
 	if player.targettingCharacter and player.firingWeapon then
 		local weaponBullet = Weapon.getSimulationTemplate(player.weapons[player.firingWeapon].name)
-		player.targettingCoords = TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
-		updatePlayerTargettingLine(player)
-	end
-end
-
-local function playerSelectWeapon(player, index)
-	if player.firingWeapon == index then
-		if Controls.checkControlHeld("chainFire") ~= player.chainFiring then
-			player.chainFiring = Controls.checkControlHeld("chainFire")
-		else
-			player.firingWeapon = false
-			player.targettingLine.destroy = true
-			player.targettingLine = false
+		if weaponBullet then
+			player.targettingCoords = TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
+			updatePlayerTargettingLine(player)
 		end
-	elseif player.weapons[index].ammo > 0 then
-		local body = player.character.body
-		player.targettingLine = Weapon.simulateFire(player.weapons[index].name, body.x, body.y, player.targettingCoords[1], player.targettingCoords[2], body.world)
-		player.firingWeapon = index
-		player.chainFiring = Controls.checkControlHeld("chainFire")
-		
-		playerTrackCharacter(player)
 	end
 end
 
@@ -109,16 +97,50 @@ local function startTargetSelection(player)
 	player.targettingCharacter = false
 end
 
+local function stopTargetSelection(player)
+	player.selectingTarget = false
+	local tile = Map.getTile(player.character.body.map, player.targettingCoords[1], player.targettingCoords[2])
+	if #tile.bodies["character"] > 0 then
+		player.targettingCharacter = tile.bodies["character"][1].parent
+		playerTrackCharacter(player)
+	end
+end
+
 local function toggleSelectingTarget(player)
 	if not player.selectingTarget then
 		startTargetSelection(player)
 	else
-		player.selectingTarget = false
-		local tile = Map.getTile(player.character.body.map, player.targettingCoords[1], player.targettingCoords[2])
-		if #tile.bodies["character"] > 0 then
-			player.targettingCharacter = tile.bodies["character"][1].parent
-			playerTrackCharacter(player)
+		stopTargetSelection(player)
+	end
+end
+
+local function playerSelectWeapon(player, index)
+	if player.firingWeapon == index then
+		--if Controls.checkControlHeld("chainFire") ~= player.chainFiring then
+		--	player.chainFiring = Controls.checkControlHeld("chainFire")
+		--else
+		if player.selectingTarget then
+			stopTargetSelection(player)
+		else
+			player.firingWeapon = false
+			if player.targettingLine then
+				player.targettingLine.destroy = true
+			end
+			player.targettingLine = false
 		end
+		--end
+	elseif player.weapons[index].ammo > 0 then
+		startTargetSelection(player)
+		if player.targettingLine then
+			player.targettingLine.destroy = true
+		end
+		
+		local body = player.character.body
+		player.targettingLine = Weapon.simulateFire(player.weapons[index].name, body.x, body.y, player.targettingCoords[1], player.targettingCoords[2], body.world)
+		player.firingWeapon = index
+		player.chainFiring = Controls.checkControlHeld("chainFire")
+		
+		playerTrackCharacter(player)
 	end
 end
 
@@ -145,12 +167,11 @@ function Player.keyInput(turnSystem, player, key)
 		playerMove(player, turnSystem, 0, 1)
 	elseif Controls.checkControl(key, "botRight") then
 		playerMove(player, turnSystem, 1, 1)
-	elseif Controls.checkControl(key, "selectTarget") then
-		toggleSelectingTarget(player)
+	--elseif Controls.checkControl(key, "selectTarget") then
+	--	toggleSelectingTarget(player)
 	else
 		for i = 1, #player.weapons do
 			if Controls.checkControl(key, "weapon" .. i) then
-				startTargetSelection(player)
 				playerSelectWeapon(player, i)
 			end
 		end

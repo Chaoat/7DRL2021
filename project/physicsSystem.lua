@@ -34,6 +34,7 @@ function PhysicsSystem.update(world, dt)
 	
 	Explosion.updateExplosions(world.explosions, dt)
 	Weapon.updateBullets(world.bullets, dt)
+	Chest.updateItems(world.items, dt)
 	
 	Map.cleanAllTiles(world.map)
 end
@@ -103,7 +104,7 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 			averageBounce = averageBounce + collider.bounce
 			totalMass = totalMass + collider.mass
 			totalHealth = totalHealth + collider.health
-			totalDamage = totalDamage + (collider.speed - collider.speedThreshold)/collider.speedPerHealth
+			totalDamage = totalDamage + math.max(collider.speed - collider.speedThreshold, 0)/collider.speedPerHealth
 		end
 		averageBounce = math.min(averageBounce/(#colliders + 1), 1)
 		
@@ -112,7 +113,7 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		local totalEnergyInAngle = math.max(PhysicsSystem.findVectorInAngle(totalEnergy, totalAngle, incident), 0)
 		totalDamage = math.min(math.max(PhysicsSystem.findVectorInAngle(totalDamage, totalAngle, incident), 0), totalHealth)
 		local bodyEnergyInAngle = math.max(PhysicsSystem.findVectorInAngle(body.speed*body.mass, body.angle, incident + math.pi), 0)
-		local bodyDamage = math.min((bodyEnergyInAngle/body.mass - body.speedThreshold)/body.speedPerHealth, body.health)
+		local bodyDamage = math.min(math.max(bodyEnergyInAngle/body.mass - body.speedThreshold, 0)/body.speedPerHealth, body.health)
 		
 		if totalDamage > body.health then
 			totalEnergyInAngle = totalEnergyInAngle*(body.health/totalDamage)
@@ -132,6 +133,8 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 				Body.damage(collider, totalDamage*ratio)
 			end
 		end
+		
+		--print(bodyDamage .. ":" .. totalDamage)
 		
 		--body.speed = body.speed*averageBounce
 		--body.angle = flipAngleOverIncident(body.angle + math.pi, incident)

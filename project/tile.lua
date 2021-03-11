@@ -87,13 +87,12 @@ function Tile.draw(tile, camera)
 		
 		if tile.trailColour[4] > 0 then
 			local dt = gc - tile.lastTrailUpdate
+			tile.trailColour[4] = math.max(tile.trailColour[4] - dt, 0)
 			
 			Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
 				love.graphics.setColor(tile.trailColour)
 				love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
 			end)
-			
-			tile.trailColour[4] = math.max(tile.trailColour[4] - dt, 0)
 		end
 		tile.lastTrailUpdate = gc
 	end

@@ -42,7 +42,7 @@ local function findNeighbours(wall)
 end
 
 function Wall.new(world, x, y)
-	local wall = {body = Body.new(x, y, world, 500, 1000, 0.4, "wall"), neighbours = {false, false, false, false}}
+	local wall = {body = Body.new(x, y, world, 200, 40, 0.4, "wall"), neighbours = {false, false, false, false}}
 	wall.body.parent = wall
 	
 	local function onMove(oldTile)
@@ -73,21 +73,21 @@ end
 function Wall.drawWalls(walls, camera)
 	for i = 1, #walls do
 		local wall = walls[i]
-		if wall.body.tile.visible then
+		if wall.body.tile.visible and not wall.body.destroy then
 			local topRight = {}
-			--addVertex(topRight, vertex(wall.neighbours[1], -1, -1, camera))
+			addVertex(topRight, vertex(wall.neighbours[1], -1, -1, camera))
 			addVertex(topRight, vertex(wall.neighbours[4], 1, 1, camera))
 			addVertex(topRight, vertex(wall.body, 1, -1, camera))
 			local botRight = {}
-			--addVertex(botRight, vertex(wall.neighbours[1], -1, 1, camera))
+			addVertex(botRight, vertex(wall.neighbours[1], -1, 1, camera))
 			addVertex(botRight, vertex(wall.neighbours[2], 1, -1, camera))
 			addVertex(botRight, vertex(wall.body, 1, 1, camera))
 			local botLeft = {}
-			--addVertex(botLeft, vertex(wall.neighbours[3], 1, 1, camera))
+			addVertex(botLeft, vertex(wall.neighbours[3], 1, 1, camera))
 			addVertex(botLeft, vertex(wall.neighbours[2], -1, -1, camera))
 			addVertex(botLeft, vertex(wall.body, -1, 1, camera))
 			local topLeft = {}
-			--addVertex(topLeft, vertex(wall.neighbours[3], 1, -1, camera))
+			addVertex(topLeft, vertex(wall.neighbours[3], 1, -1, camera))
 			addVertex(topLeft, vertex(wall.neighbours[4], -1, 1, camera))
 			addVertex(topLeft, vertex(wall.body, -1, -1, camera))
 			local compiled = {topRight, botRight, botLeft, topLeft}

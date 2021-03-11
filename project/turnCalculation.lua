@@ -24,8 +24,6 @@ end
 function TurnCalculation.runTurn(turnSystem, world)
 	print("--new turn--")
 	if not turnSystem.turnRunning then
-		local pS = world.physicsSystem
-		
 		calculateStepSize(turnSystem, world)
 		
 		turnSystem.turnRunning = true
@@ -87,9 +85,13 @@ function TurnCalculation.endTurn(game)
 		turnSystem.weaponDischarges[i].triggerTime = turnSystem.weaponDischarges[i].triggerTime - turnSystem.turnDuration
 	end
 	
+	Chest.updateChests(world.chests, player)
+	
 	Enemy.decideActions(world.enemies, player, turnSystem)
 	
 	Character.updateCharacterTrackingLines(world.characters)
+	Weapon.updateBulletTrajectories(world.bullets)
+	Explosion.updateTrajectories(world.explosions)
 	Player.endTurnUpdate(player)
 	turnSystem.turnRunning = false
 end

@@ -1,16 +1,19 @@
 local TrackingLines = {}
 
 local function simulate(body, simulationTime)
+	simulationTime = math.min(body.duration or simulationTime, simulationTime)
 	local points = {{body.x, body.y}}
-	local stepSize = 1/body.speed
-	while simulationTime > 0 do
-		local step = stepSize
-		Body.update(body, step, true)
-		if body.destroy then
-			break
+	if body.speed > 0 then
+		local stepSize = 1/body.speed
+		while simulationTime > 0 do
+			local step = math.min(stepSize, simulationTime)
+			Body.update(body, step, true)
+			if body.destroy then
+				break
+			end
+			table.insert(points, {body.x, body.y})
+			simulationTime = simulationTime - step
 		end
-		table.insert(points, {body.x, body.y})
-		simulationTime = simulationTime - step
 	end
 	Body.destroy(body)
 	return points
@@ -58,24 +61,25 @@ function TrackingLines.drawAll(trackingLines, camera)
 	local i = #trackingLines
 	while i > 0 do
 		local line = trackingLines[i]
-		for j = 1, #line.points do
-			local point = line.points[j]
-			local tile = Map.getTile(line.body.map, point[1], point[2])
-			
-			if tile.visible then
-				local lightRatio = (2*math.max(((j*line.simulationTime/#line.points - GlobalClock)%(3*GlobalTurnTime)/GlobalTurnTime) - 2.5, 0))
+		if line.destroy then
+			table.remove(trackingLines, i)
+		else
+			for j = 1, #line.points do
+				local point = line.points[j]
+				local tile = Map.getTile(line.body.map, point[1], point[2])
 				
-				local colour = Misc.blendColours(line.colour, {1, 1, 1, 1}, lightRatio)
-				Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-					love.graphics.setColor(colour)
-					love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-				end)
+				if tile.visible then
+					local lightRatio = (2*math.max(((j*line.simulationTime/#line.points - GlobalClock)%(3*GlobalTurnTime)/GlobalTurnTime) - 2.5, 0))
+					
+					local colour = Misc.blendColours(line.colour, {1, 1, 1, 1}, lightRatio)
+					Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+						love.graphics.setColor(colour)
+						love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+					end)
+				end
 			end
 		end
 		
-		if line.destroy then
-			table.remove(trackingLines, i)
-		end
 		i = i - 1
 	end
 end

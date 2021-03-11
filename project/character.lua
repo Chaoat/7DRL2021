@@ -24,7 +24,7 @@ function Character.update(character, turnTimeLeft, dt)
 		
 		Body.impartForce(body, math.min(speedTo, character.stepStrength*dt)*body.mass, angleTo)
 		
-		if not character.body.tile.floored or character.body.speed > character.stepStrength/5 then
+		if not character.flying and (not character.body.tile.floored or character.body.speed > character.stepStrength/5) then
 			character.lostFooting = true
 		end
 	elseif character.body.tile.floored and character.body.speed <= character.stepStrength/5 then
@@ -61,6 +61,11 @@ function Character.drawCharacters(characters, camera)
 			if character.body.destroy then
 				love.graphics.setColor(0.3, 0.3, 0.3, 1)
 			else
+				Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+					love.graphics.setColor(0.5, 0.5, 0, 0.3)
+					love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+				end)
+				
 				love.graphics.setColor(1, 1, 1, 1)
 			end
 			Image.drawImage(character.image, camera, character.body.x, character.body.y, 0)

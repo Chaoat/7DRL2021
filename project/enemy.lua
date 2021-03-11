@@ -38,7 +38,7 @@ do --initEnemies
 						character.targetY = Misc.round(body.y + 2*math.sin(angle))
 					else
 						enemy.firing = true
-						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Harpy Blaster", body.x, body.y, playerBody.x, playerBody.y, body.world), 0, turnSystem)
+						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Harpy Blaster", body.x, body.y, playerBody.x, playerBody.y, body, body.world), 0, turnSystem)
 						enemy.reloading = 3
 					end
 				else
@@ -52,6 +52,7 @@ do --initEnemies
 		newEnemyKind("harpy", 
 		function(x, y, world)
 			local enemy = Enemy.new("harpy", x, y, Character.new(Body.new(x, y, world, 20, 0.4, 0, "character"), 30, Image.letterToImage("w", {0, 0.8, 0, 1})), aiFunc)
+			enemy.character.flying = true
 			enemy.reloading = 0
 		end)
 	end
