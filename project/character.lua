@@ -2,9 +2,9 @@ local Character = {}
 
 function Character.new(body, stepStrength, image)
 	local world = body.world
-	local character = {body = body, stepStrength = stepStrength, image = image, targetX = body.x, targetY = body.y, world = world, lostFooting = false}
+	local character = {body = body, stepStrength = stepStrength, image = image, targetX = body.x, targetY = body.y, world = world, lostFooting = false, parent = false}
 	body.parent = character
-	character.trackingLine = TrackingLines.new(body.x, body.y, 0, body, GlobalTurnTime, {1, 1, 0, 0.4}, world)
+	character.trackingLine = TrackingLines.new(body.x, body.y, body.x, body.y, body, GlobalTurnTime, {1, 1, 0, 0.4}, world)
 	TrackingLines.clear(character.trackingLine)
 	character.body.friction = 1
 	
@@ -37,13 +37,18 @@ end
 function Character.updateCharacterTrackingLines(characters)
 	for i = 1, #characters do
 		local character = characters[i]
-		if character.lostFooting then
-			TrackingLines.changeSpeed(character.trackingLine, character.body.speed)
-			TrackingLines.updatePoints(character.trackingLine, character.body.x, character.body.y, character.body.angle)
-		elseif character.targetX ~= character.body.tile.x or character.targetY ~= character.body.tile.y then
-			TrackingLines.singlePoint(character.trackingLine, {character.targetX, character.targetY})
+		if character.body.destroy then
+			character.trackingLine.destroy = true
 		else
-			TrackingLines.clear(character.trackingLine)
+			if character.lostFooting then
+				TrackingLines.changeSpeed(character.trackingLine, character.body.speed)
+				local xOff, yOff = Misc.angleToOffset(character.body.angle, 1)
+				TrackingLines.updatePoints(character.trackingLine, character.body.x, character.body.y, character.body.x + xOff, character.body.y + yOff)
+			elseif character.targetX ~= character.body.tile.x or character.targetY ~= character.body.tile.y then
+				TrackingLines.singlePoint(character.trackingLine, {character.targetX, character.targetY})
+			else
+				TrackingLines.clear(character.trackingLine)
+			end
 		end
 	end
 end
@@ -61,10 +66,7 @@ function Character.drawCharacters(characters, camera)
 			if character.body.destroy then
 				love.graphics.setColor(0.3, 0.3, 0.3, 1)
 			else
-				Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-					love.graphics.setColor(0.5, 0.5, 0, 0.3)
-					love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-				end)
+				TileColour.drawColourOnTile({0.5, 0.5, 0, 0.2}, tile, camera)
 				
 				love.graphics.setColor(1, 1, 1, 1)
 			end

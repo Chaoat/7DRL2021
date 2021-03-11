@@ -1,7 +1,7 @@
 local Tile = {}
 
 function Tile.new(x, y, health, map)
-	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false, floored = false, trailColour = {0, 0, 0, 0}, lastTrailUpdate = GlobalClock}
+	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false, remembered = false, floored = false, trailColour = {0, 0, 0, 0}, lastTrailUpdate = GlobalClock}
 	local layers = Layers.getAllLayers()
 	
 	for i = 1, #layers do
@@ -71,17 +71,33 @@ function Tile.checkBlocking(tile, layer)
 	return false
 end
 
+function Tile.seeTile(tile)
+	tile.visible = true
+	tile.remembered = true
+	
+	for i = 1, #tile.bodies["character"] do
+		local body = tile.bodies["character"][i]
+		--print(i)
+		if body.parent.parent then
+			Enemy.warnEnemy(body.parent.parent, 3)
+		end
+	end
+end
+
 function Tile.draw(tile, camera)
 	local gc = GlobalClock
-	if tile.visible and tile.floored then
+	if (tile.visible or tile.remembered) and tile.floored then
 		local tileImage = Image.getImage("tiles/floor")
 		local parity = (tile.x + tile.y)%2
 		local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
+		if not tile.visible then
+			colour[4] = 0.2
+		end
 		
 		Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
 			love.graphics.setColor(colour)
 			love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-			love.graphics.setColor({0.1, 0.1, 0.1, 1})
+			love.graphics.setColor({0.1, 0.1, 0.1, colour[4]})
 			love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
 		end)
 		

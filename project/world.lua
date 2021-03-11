@@ -3,16 +3,8 @@ local World = {}
 function World.new(mapRadius, segmentSize)
 	local world = {physicsSystem = PhysicsSystem.new(), map = nil, pathfindingMap = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}, enemies = {}, chests = {}, items = {}}
 	MapGeneration.generateMapFromStructure(MapGeneration.generateMapStructure(mapRadius), segmentSize, world)
+	MapGeneration.populateEnemies(world.map.structure, world)
 	world.pathfindingMap = Pathfinding.newPathfindingMap(world.map)
-	
-	Enemy.spawnEnemy("harpy", 0, 0, world)
-	Enemy.spawnEnemy("harpy", 1, 0, world)
-	Enemy.spawnEnemy("harpy", 1, 1, world)
-	Enemy.spawnEnemy("harpy", 1, 2, world)
-	Enemy.spawnEnemy("harpy", 0, 1, world)
-	Enemy.spawnEnemy("harpy", -1, 0, world)
-	
-	Chest.new(40, 0, world)
 	
 	return world
 end

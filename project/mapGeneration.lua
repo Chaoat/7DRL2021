@@ -1,7 +1,7 @@
 local MapGeneration = {}
 
 local function newMapStructure(width, height)
-	local mapStructure = {nodes = {}, width = width, height = height}
+	local mapStructure = {nodes = {}, segmentSize = nil, width = width, height = height}
 	for i = 1, width do
 		mapStructure.nodes[i] = {}
 		for j = 1, height do
@@ -11,7 +11,7 @@ local function newMapStructure(width, height)
 	return mapStructure
 end
 local function newMapNode(mapStructure, x, y)
-	local mapNode = {x = x, y = y, topOpen = false, botOpen = false, rightOpen = false, leftOpen = false}
+	local mapNode = {x = x, y = y, topOpen = false, botOpen = false, rightOpen = false, leftOpen = false, danger = 0}
 	mapStructure.nodes[x][y] = mapNode
 	return mapNode
 end
@@ -130,7 +130,6 @@ function MapGeneration.distanceBetween(mapStructure, fromCoords, toCoords)
 		end
 	end
 	
-	
 	local nodesToCheck = {{fromCoords[1], fromCoords[2]}}
 	checkedCoords[fromCoords[1]][fromCoords[2]] = "origin"
 	
@@ -205,9 +204,116 @@ function MapGeneration.testDrawStructure(x, y, mapStructure)
 	end
 end
 
+local function getInternalBoundsFromNode(node, segmentSize, map)
+	return {x = {map.minCoords[1] + node.x*segmentSize + 1, map.minCoords[1] + (node.x + 1)*segmentSize - 1}, y = {map.minCoords[2] + node.y*segmentSize + 1, map.minCoords[2] + (node.y + 1)*segmentSize - 1}}
+end
+
+local function spreadDanger(centerNode, mapStructure, danger)
+	local function key(node)
+		return node.x .. ":" .. node.y
+	end	
+	
+	local checked = {}
+	checked[key(centerNode)] = true
+	
+	local checking = {{centerNode, danger}}
+	local function addNeighboursToList(node, newDanger)
+		if node.leftOpen then
+			local neighbour = mapStructure.nodes[node.x - 1][node.y]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+				checked[key(neighbour)] = true
+			end
+		end
+		if node.rightOpen then
+			local neighbour = mapStructure.nodes[node.x + 1][node.y]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+				checked[key(neighbour)] = true
+			end
+		end
+		if node.topOpen then
+			local neighbour = mapStructure.nodes[node.x][node.y - 1]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+				checked[key(neighbour)] = true
+			end
+		end
+		if node.botOpen then
+			local neighbour = mapStructure.nodes[node.x][node.y + 1]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+				checked[key(neighbour)] = true
+			end
+		end
+	end
+	
+	while #checking > 0 do
+		local nextNode = checking[1][1]
+		local newDanger = checking[1][2] - 1
+		nextNode.danger = nextNode.danger + checking[1][2]
+		
+		if newDanger > 0 then
+			addNeighboursToList(nextNode, newDanger)
+		end
+		
+		table.remove(checking, 1)
+	end
+end
+
+local function setDanger(centerNode, mapStructure, radius, targetDanger)
+	local function key(node)
+		return node.x .. ":" .. node.y
+	end	
+	
+	local checked = {}
+	checked[key(centerNode)] = true
+	
+	local checking = {{centerNode, radius}}
+	local function addNeighboursToList(node, newDanger)
+		if node.leftOpen then
+			local neighbour = mapStructure.nodes[node.x - 1][node.y]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+			end
+		end
+		if node.rightOpen then
+			local neighbour = mapStructure.nodes[node.x + 1][node.y]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+			end
+		end
+		if node.topOpen then
+			local neighbour = mapStructure.nodes[node.x][node.y - 1]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+			end
+		end
+		if node.botOpen then
+			local neighbour = mapStructure.nodes[node.x][node.y + 1]
+			if neighbour and not checked[key(neighbour)] then
+				table.insert(checking, {neighbour, newDanger})
+			end
+		end
+	end
+	
+	while #checking > 0 do
+		local nextNode = checking[1][1]
+		local newDanger = checking[1][2] - 1
+		nextNode.danger = targetDanger
+		
+		if newDanger > 0 then
+			addNeighboursToList(nextNode, newDanger)
+		end
+		
+		table.remove(checking, 1)
+	end
+end
+
 function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world)
 	local map = Map.new(segmentSize*mapStructure.width, segmentSize*mapStructure.height, mapStructure)
 	world.map = map
+	mapStructure.segmentSize = segmentSize
 	
 	local function placeWall(x1, y1, x2, y2)
 		for i = x1, x2 do
@@ -259,6 +365,96 @@ function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world
 	for i = 1, mapStructure.width do
 		for j = 1, mapStructure.height do
 			generateWall(i, j)
+		end
+	end
+	
+	MapGeneration.populateChests(mapStructure, world)
+	spreadDanger(mapStructure.nodes[math.floor(mapStructure.width/2)][math.floor(mapStructure.height/2)], mapStructure, 4)
+	
+	setDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, 6, 0)
+end
+
+function MapGeneration.populateChests(mapStructure, world)
+	for i = 1, mapStructure.width do
+		for j = 1, mapStructure.height do
+			local node = mapStructure.nodes[i][j]
+			if node then
+				local connections = 0
+				if node.topOpen then
+					connections = connections + 1
+				end
+				if node.rightOpen then
+					connections = connections + 1
+				end
+				if node.botOpen then
+					connections = connections + 1
+				end
+				if node.leftOpen then
+					connections = connections + 1
+				end
+				
+				if connections == 1 then
+					node.deadEnd = true
+					local spawnBounds = getInternalBoundsFromNode(node, mapStructure.segmentSize, world.map)
+					
+					Chest.new(Misc.round(Random.randomBetweenPoints(spawnBounds.x[1], spawnBounds.x[2])), Misc.round(Random.randomBetweenPoints(spawnBounds.y[1], spawnBounds.y[2])), world)
+					spreadDanger(node, mapStructure, 4)
+				end
+			end
+		end
+	end
+end
+
+local enemyEntries = {}
+local maxDangerEnemy = 0
+local function newEnemyEntry(danger, enemyName)
+	local entry = {danger = danger, enemyName = enemyName}
+	if not enemyEntries[danger] then
+		enemyEntries[danger] = {}
+	end
+	maxDangerEnemy = math.max(maxDangerEnemy, danger)
+	table.insert(enemyEntries[danger], entry)
+end
+do --initEnemyParties
+	newEnemyEntry(1, "Harpy")
+	newEnemyEntry(2, "Gremlin")
+	newEnemyEntry(3, "Saturation Turret")
+end
+
+function MapGeneration.populateEnemies(mapStructure, world)
+	for i = 1, mapStructure.width do
+		for j = 1, mapStructure.height do
+			local node = mapStructure.nodes[i][j]
+			if node and node.danger > 0 then
+				local dangerLeft = node.danger
+				local spawnList = {}
+				while dangerLeft > 0 do
+					local chosenDanger
+					local enemyEntry
+					while not enemyEntry do
+						chosenDanger = Misc.round(Random.randomBetweenPoints(1, math.min(maxDangerEnemy, dangerLeft)))
+						if enemyEntries[chosenDanger] then
+							enemyEntry = Random.randomFromList(enemyEntries[chosenDanger])
+						end
+					end
+					
+					dangerLeft = dangerLeft - chosenDanger
+					table.insert(spawnList, enemyEntry.enemyName)
+				end
+				
+				local locationList = {}
+				local spawnBounds = getInternalBoundsFromNode(node, mapStructure.segmentSize, world.map)
+				for x = spawnBounds.x[1], spawnBounds.x[2] do
+					for y = spawnBounds.y[1], spawnBounds.y[2] do
+						table.insert(locationList, {x, y})
+					end
+				end
+				
+				local spawnLocations = Random.nRandomFromList(locationList, #spawnList)
+				for i = 1, #spawnLocations do
+					Enemy.spawnEnemy(spawnList[i], spawnLocations[i][1], spawnLocations[i][2], world)
+				end
+			end
 		end
 	end
 end

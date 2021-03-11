@@ -39,7 +39,7 @@ local function openChest(x, y, rarities, itemNumberRange, world)
 end
 
 function Chest.new(x, y, world)
-	local chest = {character = Character.new(Body.new(x, y, world, 10, 100, 0, "character"), 0, Image.letterToImage("%", {0.7, 0.7, 0.7, 1}))}
+	local chest = {character = Character.new(Body.new(x, y, world, 10, 100, 0, "character"), 0, Image.letterToImage("#", {0.2, 0.9, 0.9, 1}))}
 	
 	chest.character.body.destroyFunction = function(body)
 		openChest(body.x, body.y, {1}, {1, 2}, world)
@@ -85,6 +85,8 @@ function Chest.drawItems(items, camera)
 	for i = 1, #items do
 		local item = items[i]
 		if item.body.tile.visible then
+			TileColour.drawColourOnTile({0, 1, 1, 0.2}, item.body.tile, camera)
+			love.graphics.setColor(1, 1, 1, 1)
 			Image.drawImage(item.image, camera, item.body.x, item.body.y, item.angle)
 		end
 	end

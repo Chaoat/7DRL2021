@@ -6,9 +6,10 @@ local function newParticle(x, y, radius, angle, damage, mass, speed, colour1, co
 	body.speedThreshold = 0
 	local particle = {body = body, tileColour = TileColour.new(colour1, colour2, radius/speed)}
 	Body.impartForce(body, speed*mass, angle)
-	body.duration = radius/speed
+	body.duration = radius/math.abs(speed)
 	
-	particle.trackingLine = TrackingLines.new(body.x, body.y, body.angle, body, GlobalTurnTime, {1, 0, 0, 0.4}, world)
+	local xOff, yOff = Misc.angleToOffset(body.angle, 1)
+	particle.trackingLine = TrackingLines.new(body.x, body.y, body.x + xOff, body.y + yOff, body, GlobalTurnTime, {1, 0, 0, 0.4}, world)
 	table.insert(world.explosions, particle)
 	return particle
 end
@@ -23,7 +24,7 @@ function Explosion.explode(x, y, radius, mass, speed, damage, world)
 end
 
 function Explosion.ring(x, y, radius, ringSize, mass, speed, damage, world)
-	local nParticles = 3*math.ceil(2*radius*math.pi)
+	local nParticles = 3*math.ceil(2*(radius + ringSize)*math.pi)
 	local partDamage = damage/nParticles
 	for i = 1, nParticles do
 		local angle = 2*math.pi*(i/nParticles)
@@ -56,7 +57,8 @@ function Explosion.updateTrajectories(explosions)
 	for i = 1, #explosions do
 		local explosion = explosions[i]
 		TrackingLines.changeSpeed(explosion.trackingLine, explosion.body.speed)
-		TrackingLines.updatePoints(explosion.trackingLine, explosion.body.x, explosion.body.y, explosion.body.angle)
+		local xOff, yOff = Misc.angleToOffset(explosion.body.angle, 1)
+		TrackingLines.updatePoints(explosion.trackingLine, explosion.body.x, explosion.body.y, explosion.body.x + xOff, explosion.body.y + yOff)
 	end
 end
 

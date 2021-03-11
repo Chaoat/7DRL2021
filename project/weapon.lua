@@ -9,7 +9,8 @@ local function newDeadly(x, y, health, mass, bounce, world, speed, angle, image,
 	Body.impartForce(body, speed*mass, angle)
 	body.minSpeed = minSpeed
 	
-	bullet.trackingLine = TrackingLines.new(body.x, body.y, body.angle, body, GlobalTurnTime, {1, 0, 0, 0.4}, world)
+	local xOff, yOff = Misc.angleToOffset(body.angle, 1)
+	bullet.trackingLine = TrackingLines.new(body.x, body.y, body.x + xOff, body.y + yOff, body, GlobalTurnTime, {1, 0, 0, 0.4}, world)
 	
 	if body.tile == nil then
 		error("what")
@@ -65,8 +66,8 @@ do --initialize player weapons
 		function(x, y, targetX, targetY, firingBody, world)
 			local angle = math.atan2(targetY - y, targetX - x)
 			Body.impartForce(firingBody, 5, angle + math.pi)
-			newBullet(x, y, 20, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.8, 0.8, 0.8, 1}), 20, {0.8, 0.6, 0, 0.8}, function(bullet)
-				Explosion.explode(bullet.x, bullet.y, 2, 1, 20, 80, world)
+			newBullet(x, y, 8, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.8, 0.8, 0.8, 1}), 20, {0.8, 0.6, 0, 0.8}, function(bullet)
+				Explosion.explode(bullet.x, bullet.y, 2, 0.4, 20, 70, world)
 			end)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
@@ -94,6 +95,25 @@ do --initialize player weapons
 		end, 
 		{0.8, 0, 0, 1}, simulationBody)
 	end
+	
+	do --Matter Compressor
+		local bulletSpeed = 25
+		local simulationBody = Body.newRaw(20, 0.1, 0, "bullet")
+		simulationBody.speed = bulletSpeed
+		simulationBody.minSpeed = 20
+		simulationBody.preciseLanding = true
+		
+		addWeapon("Matter Compressor", 
+		function(x, y, targetX, targetY, firingBody, world)
+			local angle = math.atan2(targetY - y, targetX - x)
+			local bullet = newBullet(x, y, 10, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.4, 0.4, 0.4, 1}), 20, {0, 0, 0, 0.8}, function(bullet)
+				Explosion.ring(bullet.x, bullet.y, 4, 5, 3, -30, 1, world)
+			end)
+			local dist = math.sqrt((targetY - y)^2 + (targetX - x)^2)
+			bullet.body.duration = (dist - 2)/bulletSpeed
+		end, 
+		{0.3, 0.3, 0.3, 1}, simulationBody)
+	end
 end
 
 do --initialize enemy weapons
@@ -109,13 +129,38 @@ do --initialize enemy weapons
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
+	
+	do --ChainGun
+		local bulletSpeed = 25
+		addWeapon("ChainGun", 
+		function(x, y, targetX, targetY, firingBody, world)
+			local angle = math.atan2(targetY - y, targetX - x) + Random.randomBetweenPoints(-math.pi/6, math.pi/6)
+			newBullet(x, y, 12, 0.2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 1, 0, 1}), 15, {1, 1, 0, 0.3})
+		end, 
+		{0, 1, 0, 1}, nil)
+	end
+	
+	do --Junk Rocket
+		local bulletSpeed = 20
+		local simulationBody = Body.newRaw(20, 0.1, 0, "bullet")
+		simulationBody.speed = bulletSpeed
+		simulationBody.minSpeed = 5
+		addWeapon("Junk Rocket", 
+		function(x, y, targetX, targetY, firingBody, world)
+			local angle = math.atan2(targetY - y, targetX - x)
+			Body.impartForce(firingBody, 30, angle + math.pi)
+			newBullet(x, y, 20, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.5, 0.5, 0.5, 1}), 20, {0.7, 0.3, 0, 0.6}, function(bullet)
+				Explosion.explode(bullet.x, bullet.y, 4, 1.5, 15, 200, world)
+			end)
+		end, 
+		{0, 1, 0, 1}, simulationBody)
+	end
 end
 
 function Weapon.simulateFire(weaponName, x, y, targetX, targetY, world)
 	local weapon = weapons[weaponName]
 	if weapon.bodyTemplate then
-		local angle = math.atan2(targetY - y, targetX - x)
-		return TrackingLines.new(x, y, angle, weapon.bodyTemplate, GlobalTurnTime, {1, 0, 0, 0.4}, world)
+		return TrackingLines.new(x, y, targetX, targetY, weapon.bodyTemplate, GlobalTurnTime, {1, 0, 0, 0.4}, world)
 	end
 end
 
@@ -156,7 +201,9 @@ function Weapon.updateBulletTrajectories(bullets)
 	for i = 1, #bullets do
 		local bullet = bullets[i]
 		TrackingLines.changeSpeed(bullet.trackingLine, bullet.body.speed)
-		TrackingLines.updatePoints(bullet.trackingLine, bullet.body.x, bullet.body.y, bullet.body.angle)
+		
+		local xOff, yOff = Misc.angleToOffset(bullet.body.angle, 1)
+		TrackingLines.updatePoints(bullet.trackingLine, bullet.body.x, bullet.body.y, bullet.body.x + xOff, bullet.body.y + yOff)
 	end
 end
 
@@ -164,6 +211,8 @@ function Weapon.drawBullets(bullets, camera)
 	for i = 1, #bullets do
 		local bullet = bullets[i]
 		if bullet.body.tile.visible then
+			TileColour.drawColourOnTile({1, 0, 0, 0.2}, bullet.body.tile, camera)
+			love.graphics.setColor(1, 1, 1, 1)
 			Image.drawImage(bullet.image, camera, bullet.body.x, bullet.body.y, bullet.body.angle)
 		end
 	end

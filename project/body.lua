@@ -54,7 +54,7 @@ function Body.update(body, dt, ignoreCollisions)
 	local nextX = body.x + dt*body.speed*math.cos(body.angle)
 	local nextY = body.y + dt*body.speed*math.sin(body.angle)
 	
-	if body.friction then
+	if body.friction and body.tile.floored then
 		body.speed = body.speed*math.max((1 - dt*body.friction), 0)
 	end
 	

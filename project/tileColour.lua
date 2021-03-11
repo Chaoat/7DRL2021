@@ -20,4 +20,11 @@ function TileColour.draw(tileColour, tile, camera)
 	end
 end
 
+function TileColour.drawColourOnTile(colour, tile, camera)
+	Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+		love.graphics.setColor(colour)
+		love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+	end)
+end
+
 return TileColour

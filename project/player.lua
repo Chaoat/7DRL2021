@@ -4,13 +4,13 @@ local function updatePlayerTargettingLine(player)
 	if player.targettingLine then
 		local playerTile = player.character.body.tile
 		local newAngle = math.atan2(player.targettingCoords[2] - player.character.body.y, player.targettingCoords[1] - player.character.body.x)
-		TrackingLines.updatePoints(player.targettingLine, playerTile.x, playerTile.y, newAngle)
+		TrackingLines.updatePoints(player.targettingLine, playerTile.x, playerTile.y, player.targettingCoords[1], player.targettingCoords[2])
 	end
 end
 
 function Player.new(x, y, world)
 	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}))
-	local player = {character = character, viewRange = 20, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
+	local player = {character = character, viewRange = 15, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
 	
 	local function onMove(oldTile)
 		if oldTile then
@@ -24,14 +24,17 @@ function Player.new(x, y, world)
 		
 		updatePlayerTargettingLine(player)
 		Chest.getItemsOnTile(playerTile, player)
+		
+		--print(player.character.body.tile.x .. "--" .. player.character.body.tile.y)
 	end
 	
 	onMove()
 	Body.addMoveCallback(character.body, onMove)
 	
-	Player.getWeapon(player, "Bolt Caster", 10)
-	Player.getWeapon(player, "Hydrocarbon Explosive", 10)
-	Player.getWeapon(player, "Force Wave", 10)
+	Player.getWeapon(player, "Bolt Caster", 30)
+	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
+	--Player.getWeapon(player, "Force Wave", 10)
+	--Player.getWeapon(player, "Matter Compressor", 30)
 	
 	return player
 end
@@ -63,8 +66,9 @@ local function playerMove(player, turnSystem, xDir, yDir)
 		
 		if player.firingWeapon then
 			local weapon = player.weapons[player.firingWeapon]
-			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body, player.character.body.world), 0, turnSystem)
+			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body, player.character.body.world), player.character.body, 0, turnSystem)
 			weapon.ammo = weapon.ammo - 1
+			Enemy.shout(player.character.body, player.viewRange, 10)
 			
 			if not player.chainFiring or weapon.ammo <= 0 then
 				player.firingWeapon = false
@@ -91,7 +95,13 @@ end
 
 local function startTargetSelection(player)
 	if not player.firingWeapon and not player.selectingTarget then
-		player.targettingCoords = {player.character.body.x, player.character.body.y}
+		local body = player.character.body
+		local closestEnemy = Vision.findClosestEnemy(body.world, body.x, body.y, player.viewRange)
+		if closestEnemy then
+			player.targettingCoords = {closestEnemy.x, closestEnemy.y}
+		else
+			player.targettingCoords = {body.x, body.y}
+		end
 	end
 	player.selectingTarget = true
 	player.targettingCharacter = false

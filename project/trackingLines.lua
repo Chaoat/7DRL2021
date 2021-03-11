@@ -14,20 +14,16 @@ local function simulate(body, simulationTime)
 			table.insert(points, {body.x, body.y})
 			simulationTime = simulationTime - step
 		end
+	else
+		points = {}
 	end
 	Body.destroy(body)
 	return points
 end
 
-function TrackingLines.new(x, y, angle, bodyTemplate, simulationTime, colour, world)
-	local body = Body.duplicateRaw(bodyTemplate)
-	local xOff, yOff = Misc.angleToDir(angle)
-	Body.placeInWorld(body, x + xOff, y + yOff, world)
-	body.angle = angle
-	body.simulation = true
-	
-	local points = simulate(body, simulationTime)
-	local line = {points = points, simulationTime = simulationTime, bodyTemplate = bodyTemplate, body = body, colour = colour}
+function TrackingLines.new(x, y, targetX, targetY, bodyTemplate, simulationTime, colour, world)
+	local line = {points = nil, simulationTime = simulationTime, bodyTemplate = bodyTemplate, body = nil, colour = colour, world = world}
+	TrackingLines.updatePoints(line, x, y, targetX, targetY)
 	table.insert(world.trackingLines, line)
 	return line
 end
@@ -36,16 +32,22 @@ function TrackingLines.changeSpeed(line, newSpeed)
 	line.bodyTemplate.speed = newSpeed
 end
 
-function TrackingLines.updatePoints(line, newX, newY, newAngle)
+function TrackingLines.updatePoints(line, newX, newY, targetX, targetY)
+	local angle = math.atan2(targetY - newY, targetX - newX)
 	local body = Body.duplicateRaw(line.bodyTemplate)
-	local xOff, yOff = Misc.angleToDir(newAngle)
-	Body.placeInWorld(body, newX + xOff, newY + yOff, line.body.world)
-	body.angle = newAngle
+	line.body = body
+	local xOff, yOff = Misc.angleToDir(angle)
+	Body.placeInWorld(body, newX + xOff, newY + yOff, line.world)
+	body.angle = angle
 	body.simulation = true
+	
+	if body.preciseLanding and not body.duration then
+		local dist = math.sqrt((targetY - newY)^2 + (targetX - newX)^2)
+		body.duration = (dist - 2)/body.speed
+	end
 	
 	local points = simulate(body, line.simulationTime)
 	line.points = points
-	line.body = body
 	return line
 end
 

@@ -35,8 +35,11 @@ local function findNeighbours(wall)
 	iterateOverNeighbours(wall, 
 	function(neighbourI, tile)
 		if #tile.bodies["wall"] > 0 then
-			wall.neighbours[neighbourI] = tile.bodies["wall"][1]
-			tile.bodies["wall"][1].parent.neighbours[oppositeI(neighbourI)] = wall.body
+			local wallBody = tile.bodies["wall"][1]
+			if wallBody.ID ~= wall.body.ID then
+				wall.neighbours[neighbourI] = wallBody
+				wallBody.parent.neighbours[oppositeI(neighbourI)] = wall.body
+			end
 		end
 	end)
 end
@@ -73,7 +76,7 @@ end
 function Wall.drawWalls(walls, camera)
 	for i = 1, #walls do
 		local wall = walls[i]
-		if wall.body.tile.visible and not wall.body.destroy then
+		if (wall.body.tile.visible or wall.body.tile.remembered) and not wall.body.destroy then
 			local topRight = {}
 			addVertex(topRight, vertex(wall.neighbours[1], -1, -1, camera))
 			addVertex(topRight, vertex(wall.neighbours[4], 1, 1, camera))
@@ -125,11 +128,18 @@ function Wall.drawWalls(walls, camera)
 			--	a = 1
 			--end
 			
+			local alpha = 1
+			if not wall.body.tile.visible then
+				alpha = 0.2
+			end
+			
+			love.graphics.setLineWidth(2)
+			love.graphics.setLineStyle("rough")
 			Camera.drawTo(camera, wall.body.x, wall.body.y, function(drawX, drawY)
 				--love.graphics.setColor(r, g, b, a)
-				love.graphics.setColor(0.8, 0.8, 0.8, 1)
+				love.graphics.setColor(0.8, 0.8, 0.8, alpha)
 				love.graphics.polygon("fill", vertices)
-				love.graphics.setColor(0.4, 0.4, 0.4, 1)
+				love.graphics.setColor(0.4, 0.4, 0.4, alpha)
 				love.graphics.polygon("line", vertices)
 			end)
 		end

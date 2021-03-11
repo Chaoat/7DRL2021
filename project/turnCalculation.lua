@@ -5,8 +5,10 @@ function TurnCalculation.newSystem(turnDuration)
 	return turnSystem
 end
 
-function TurnCalculation.addWeaponDischarge(func, triggerTime, turnSystem)
-	Misc.binaryInsert(turnSystem.weaponDischarges, {triggerTime = triggerTime, func = func}, "triggerTime")
+function TurnCalculation.addWeaponDischarge(func, firingBody, triggerTime, turnSystem)
+	local weaponDischarge = {triggerTime = triggerTime, firingBody = firingBody, func = func, fired = false}
+	Misc.binaryInsert(turnSystem.weaponDischarges, weaponDischarge, "triggerTime")
+	return weaponDischarge
 end
 
 local function calculateStepSize(turnSystem, world)
@@ -54,6 +56,7 @@ function TurnCalculation.updateTurn(game, dt)
 			end
 			
 			PhysicsSystem.update(world, thisStep)
+			calculateStepSize(turnSystem, world)
 			
 			stepTime = stepTime - thisStep
 		end
@@ -62,8 +65,11 @@ function TurnCalculation.updateTurn(game, dt)
 		
 		local newBodies = false
 		while #turnSystem.weaponDischarges > 0 and turnSystem.weaponDischarges[1].triggerTime <= turnSystem.turnDuration - turnSystem.turnLeft do
-			newBodies = true
-			turnSystem.weaponDischarges[1].func()
+			if not turnSystem.weaponDischarges[1].firingBody.destroy then
+				newBodies = true
+				turnSystem.weaponDischarges[1].func()
+			end
+			turnSystem.weaponDischarges[1].fired = true
 			table.remove(turnSystem.weaponDischarges, 1)
 		end
 		if newBodies then

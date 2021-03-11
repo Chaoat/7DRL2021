@@ -66,4 +66,8 @@ function Misc.addColours(colour, addedColour)
 	colour[4] = math.min(colour[4] + addedColour[4], 1)
 end
 
+function Misc.angleToOffset(angle, dist)
+	return dist*math.cos(angle), dist*math.sin(angle)
+end
+
 return Misc
