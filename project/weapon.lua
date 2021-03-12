@@ -63,7 +63,9 @@ do --initialize player weapons
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = 20
 		addWeapon("Bolt Caster", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			Body.impartForce(firingBody, 5, angle + math.pi)
 			newBullet(x, y, 8, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.8, 0.8, 0.8, 1}), 20, {0.8, 0.6, 0, 0.8}, function(bullet)
@@ -75,7 +77,9 @@ do --initialize player weapons
 	
 	do --Force Wave
 		addWeapon("Force Wave", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			Explosion.ring(x, y, 4, 1, 1, 20, 20, world)
 		end, 
 		{0.7, 0.7, 1, 1}, nil)
@@ -87,7 +91,9 @@ do --initialize player weapons
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = 0
 		addWeapon("Hydrocarbon Explosive", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			newBomb(x, y, 10, 1, 0, world, bulletSpeed, angle, Image.letterToImage("O", {0.8, 0, 0, 1}), 0, {0.4, 0, 0, 0.4}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 10, 2, 30, 1000, world)
@@ -98,13 +104,15 @@ do --initialize player weapons
 	
 	do --Matter Compressor
 		local bulletSpeed = 25
-		local simulationBody = Body.newRaw(20, 0.1, 0, "bullet")
+		local simulationBody = Body.newRaw(10, 0.1, 0, "bullet")
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = 20
 		simulationBody.preciseLanding = true
 		
 		addWeapon("Matter Compressor", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, 10, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.4, 0.4, 0.4, 1}), 20, {0, 0, 0, 0.8}, function(bullet)
 				Explosion.ring(bullet.x, bullet.y, 4, 5, 3, -30, 1, world)
@@ -114,13 +122,40 @@ do --initialize player weapons
 		end, 
 		{0.3, 0.3, 0.3, 1}, simulationBody)
 	end
+	
+	do --Emergency Thruster
+		local bulletSpeed = 45
+		local bulletDamage = 15
+		local minSpeed = 15
+		local friction = 4
+		local simulationBody = Body.newRaw(bulletDamage, 0.1, 0, "bullet")
+		simulationBody.speed = bulletSpeed
+		simulationBody.minSpeed = minSpeed
+		simulationBody.friction = friction
+		
+		addWeapon("Emergency Thruster", 
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
+			local angle = math.atan2(targetY - y, targetX - x)
+			Body.impartForce(firingBody, 60, angle + math.pi)
+			fireOverSpread(angle, math.pi/5, 13,
+			function(a)
+				local bullet = newBullet(x, y, bulletDamage, 0.1, 0, world, Random.randomBetweenPoints(bulletSpeed/2, bulletSpeed), a, Image.letterToImage("~", {1, 0.5, 0, 1}), minSpeed, {1, 0.5, 0, 0.4})
+				bullet.body.friction = friction
+			end)
+		end, 
+		{1, 0.6, 0.1, 1}, simulationBody)
+	end
 end
 
 do --initialize enemy weapons
 	do --Harpy Blaster
 		local bulletSpeed = 30
 		addWeapon("Harpy Blaster", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			fireOverSpread(angle, math.pi/3, 4,
 			function(a)
@@ -133,7 +168,9 @@ do --initialize enemy weapons
 	do --ChainGun
 		local bulletSpeed = 25
 		addWeapon("ChainGun", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x) + Random.randomBetweenPoints(-math.pi/6, math.pi/6)
 			newBullet(x, y, 12, 0.2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 1, 0, 1}), 15, {1, 1, 0, 0.3})
 		end, 
@@ -146,7 +183,9 @@ do --initialize enemy weapons
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = 5
 		addWeapon("Junk Rocket", 
-		function(x, y, targetX, targetY, firingBody, world)
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			Body.impartForce(firingBody, 30, angle + math.pi)
 			newBullet(x, y, 20, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.5, 0.5, 0.5, 1}), 20, {0.7, 0.3, 0, 0.6}, function(bullet)

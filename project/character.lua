@@ -45,7 +45,7 @@ function Character.updateCharacterTrackingLines(characters)
 				local xOff, yOff = Misc.angleToOffset(character.body.angle, 1)
 				TrackingLines.updatePoints(character.trackingLine, character.body.x, character.body.y, character.body.x + xOff, character.body.y + yOff)
 			elseif character.targetX ~= character.body.tile.x or character.targetY ~= character.body.tile.y then
-				TrackingLines.singlePoint(character.trackingLine, {character.targetX, character.targetY})
+				TrackingLines.lineBetween(character.trackingLine, {character.body.x, character.body.y}, {character.targetX, character.targetY})
 			else
 				TrackingLines.clear(character.trackingLine)
 			end

@@ -58,7 +58,7 @@ do --initEnemies
 						character.targetY = Misc.round(body.y + 2*math.sin(angle))
 					else
 						enemy.firing = true
-						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Harpy Blaster", body.x, body.y, playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
+						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Harpy Blaster", playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
 						enemy.reloading = 3
 					end
 				else
@@ -98,7 +98,7 @@ do --initEnemies
 						elseif dist <= 15 then
 							if enemy.reloading == 0 then
 								enemy.firing = true
-								enemy.weaponDischarge = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Junk Rocket", body.x, body.y, playerBody.x, playerBody.y, body, body.world), body, 0.6, turnSystem)
+								enemy.weaponDischarge = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Junk Rocket", playerBody.x, playerBody.y, body, body.world), body, 0.6, turnSystem)
 								enemy.targettingLine = Weapon.simulateFire("Junk Rocket", body.x, body.y, playerBody.x, playerBody.y, body.world)
 							end
 						end
@@ -150,7 +150,7 @@ do --initEnemies
 				
 				--if body.tile.visible then
 					enemy.firing = true
-					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("ChainGun", body.x, body.y, playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
+					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("ChainGun", playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
 				--end
 			end
 		end
@@ -198,6 +198,8 @@ function Enemy.decideActions(enemies, player, turnSystem)
 				if enemy.warned == 0 then
 					enemy.alerted = false
 				end
+			else
+				Enemy.warnEnemy(enemy, 1)
 			end
 			
 			enemy.aiFunction(enemy, player, turnSystem)

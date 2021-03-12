@@ -20,7 +20,7 @@ function World.draw(world, drawTrackers, camera)
 	if drawTrackers then
 		TrackingLines.drawAll(world.trackingLines, camera)
 	end
-	--Body.debugDrawBodies(world.physicsSystem.bodies, game.mainCamera)
+	--Body.debugDrawBodies(world.physicsSystem.bodies, camera)
 	--MapGeneration.testDrawStructure(100, 100, world.map.structure)
 end
 

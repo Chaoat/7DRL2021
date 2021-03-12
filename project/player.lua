@@ -35,6 +35,7 @@ function Player.new(x, y, world)
 	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
 	--Player.getWeapon(player, "Force Wave", 10)
 	--Player.getWeapon(player, "Matter Compressor", 30)
+	Player.getWeapon(player, "Emergency Thruster", 30)
 	
 	return player
 end
@@ -66,7 +67,7 @@ local function playerMove(player, turnSystem, xDir, yDir)
 		
 		if player.firingWeapon then
 			local weapon = player.weapons[player.firingWeapon]
-			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.character.body.x, player.character.body.y, player.targettingCoords[1], player.targettingCoords[2], player.character.body, player.character.body.world), player.character.body, 0, turnSystem)
+			TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire(weapon.name, player.targettingCoords[1], player.targettingCoords[2], player.character.body, player.character.body.world), player.character.body, 0, turnSystem)
 			weapon.ammo = weapon.ammo - 1
 			Enemy.shout(player.character.body, player.viewRange, 10)
 			
@@ -124,6 +125,9 @@ local function toggleSelectingTarget(player)
 	end
 end
 
+local areaWeapons = {}
+areaWeapons["Force Wave"] = true
+
 local function playerSelectWeapon(player, index)
 	if player.firingWeapon == index then
 		--if Controls.checkControlHeld("chainFire") ~= player.chainFiring then
@@ -140,7 +144,10 @@ local function playerSelectWeapon(player, index)
 		end
 		--end
 	elseif player.weapons[index].ammo > 0 then
-		startTargetSelection(player)
+		if not areaWeapons[player.weapons[index].name] then
+			startTargetSelection(player)
+		end
+		
 		if player.targettingLine then
 			player.targettingLine.destroy = true
 		end

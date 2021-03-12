@@ -29,6 +29,9 @@ function Game.draw(game)
 	Camera.draw(0, 0, game.mainCamera)
 	
 	Interface.drawPlayerWeapons(0, 450, game.player)
+	
+	--local lX, lY = Camera.screenToLogicCoords(love.mouse.getX(), love.mouse.getY(), {0, 0}, game.mainCamera)
+	--Vision.debugDrawRoute(Misc.round(lX - game.mainCamera.x), Misc.round(lY - game.mainCamera.y), game.player.character.body.tile.x, game.player.character.body.tile.y, game.mainCamera)
 end
 
 function Game.handleKeyboardInput(game, key)

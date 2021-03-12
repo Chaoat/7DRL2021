@@ -140,7 +140,8 @@ function Body.debugDrawBodies(bodies, camera)
 		local body = bodies[i]
 		love.graphics.setColor(body.speed/100, (body.angle%(2*math.pi))/2*math.pi, 0, 0.7)
 		Camera.drawTo(camera, body.x, body.y, function(drawX, drawY)
-			love.graphics.circle("fill", drawX, drawY, 7)
+			--love.graphics.circle("fill", drawX, drawY, 7)
+			love.graphics.print(math.ceil(body.speed), drawX, drawY)
 		end)
 	end
 end

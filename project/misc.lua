@@ -70,4 +70,46 @@ function Misc.angleToOffset(angle, dist)
 	return dist*math.cos(angle), dist*math.sin(angle)
 end
 
+function Misc.orthogDistance(x1, y1, x2, y2)
+	return math.max(math.abs(x1 - x2), math.abs(y1 - y2))
+end
+
+local function orthogRotate(x, y, angle)
+	if angle == 0 then
+		return x, y
+	end
+	
+	local curAngle = math.atan2(y, x)
+	local dist = Misc.orthogDistance(0, 0, x, y)
+	
+	angle = curAngle + angle
+	local boundAngle = math.min(angle%(math.pi/2), math.pi/2 - angle%(math.pi/2))
+	
+	local multAngle = (angle + math.pi/4)%(math.pi/2) - math.pi/4
+	local distMultiple = 1/math.cos(multAngle)
+	
+	local returnX = Misc.round(distMultiple*dist*math.cos(angle))
+	local returnY = Misc.round(distMultiple*dist*math.sin(angle))
+	
+	local returnDist = Misc.orthogDistance(0, 0, returnX, returnY)
+	if returnDist ~= dist then
+		error("what the fuck")
+	end
+	
+	return returnX, returnY
+end
+
+function Misc.plotLine(x1, y1, x2, y2)
+	local distBetween = Misc.orthogDistance(x1, y1, x2, y2)
+	local angle = math.atan2(y2 - y1, x2 - x1)
+	
+	local tileList = {{x1, y1}}
+	for i = 1, distBetween do
+		local dirX, dirY = orthogRotate(i, 0, math.atan2(y2 - y1, x2 - x1))
+		table.insert(tileList, {x1 + dirX, y1 + dirY})
+	end
+	
+	return tileList
+end
+
 return Misc

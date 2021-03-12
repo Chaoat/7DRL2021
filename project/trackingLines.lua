@@ -55,6 +55,10 @@ function TrackingLines.singlePoint(line, point)
 	line.points = {point}
 end
 
+function TrackingLines.lineBetween(line, origin, target)
+	line.points = Misc.plotLine(origin[1], origin[2], target[1], target[2])
+end
+
 function TrackingLines.clear(line)
 	line.points = {}
 end

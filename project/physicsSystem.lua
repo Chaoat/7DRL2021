@@ -57,7 +57,8 @@ local function findIncident(body, newX, newY, tile)
 		end
 		return false
 	end
-	if body.x >= tile.x - 0.5 and body.x <= tile.x + 0.5 and body.y <= tile.y then
+	
+	if body.x >= tile.x - 0.5 and body.x <= tile.x + 0.5 then
 		if body.y <= tile.y then
 			return -math.pi/2
 		else

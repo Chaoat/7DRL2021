@@ -12,6 +12,13 @@ function Camera.getDrawCoords(logicX, logicY, camera)
 	return drawX, drawY
 end
 
+function Camera.screenToLogicCoords(x, y, cameraCorner, camera)
+	x = x - cameraCorner[1]
+	y = y - cameraCorner[2]
+	
+	return (x - camera.canvasDims[1]/2)/camera.tileDims[1] + camera.x, (y - camera.canvasDims[2]/2)/camera.tileDims[2] + camera.y
+end
+
 function Camera.update(camera, dt)
 	if camera.followingBody then
 		camera.x = camera.followingBody.x
