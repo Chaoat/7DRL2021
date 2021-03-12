@@ -118,8 +118,10 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		
 		if totalDamage > body.health then
 			totalEnergyInAngle = totalEnergyInAngle*(body.health/totalDamage)
+			totalDamage = body.health
 		elseif bodyDamage > totalHealth then
 			bodyEnergyInAngle = bodyEnergyInAngle*(totalHealth/bodyDamage)
+			bodyDamage = totalHealth
 		end
 		
 		if not body.simulation and not ignoreCollisions then

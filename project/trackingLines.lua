@@ -17,6 +17,7 @@ local function simulate(body, simulationTime)
 	else
 		points = {}
 	end
+	
 	Body.destroy(body)
 	return points
 end
@@ -48,6 +49,16 @@ function TrackingLines.updatePoints(line, newX, newY, targetX, targetY)
 	
 	local points = simulate(body, line.simulationTime)
 	line.points = points
+	
+	if line.bodyTemplate.layer == "bullet" or line.bodyTemplate.layer == "explosion" then
+		for i = 1, #points do
+			local point = points[i]
+			local tile = Map.getTile(line.world.map, point[1], point[2])
+			
+			table.insert(tile.danger, line)
+		end
+	end
+	
 	return line
 end
 
@@ -67,6 +78,10 @@ function TrackingLines.drawAll(trackingLines, camera)
 	local i = #trackingLines
 	while i > 0 do
 		local line = trackingLines[i]
+		if line.creatorBody and line.creatorBody.destroy then
+			line.destroy = true
+		end
+		
 		if line.destroy then
 			table.remove(trackingLines, i)
 		else

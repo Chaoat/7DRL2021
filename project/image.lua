@@ -46,6 +46,9 @@ function Image.letterToImage(letter, colour)
 	
 	Font.setFont("437", 1.5*height)
 	
+	width = width + 6
+	height = height + 6
+	
 	local canvas = CanvasCache.getCanvas(width, height)
 	canvas:setFilter('nearest', 'nearest')
 	love.graphics.setCanvas(canvas)
@@ -53,7 +56,7 @@ function Image.letterToImage(letter, colour)
 	
 	Shader.pixelateTextShader:send("threshold", 0.5)
 	love.graphics.setShader(Shader.pixelateTextShader)
-	love.graphics.printf(letter, 0, -0.2*height, 1.1*width, "center")
+	love.graphics.printf(letter, 3, 3 - 0.2*height, 1.1*width, "center")
 	love.graphics.setShader()
 	
 	love.graphics.setCanvas()
@@ -64,6 +67,22 @@ end
 function Image.drawImage(image, camera, x, y, r)
 	Camera.drawTo(camera, x, y, function(drawX, drawY)
 		love.graphics.draw(image.image, drawX, drawY, r, 1, 1, image.width/2, image.height/2)
+	end)
+end
+
+function Image.drawImageWithOutline(image, camera, x, y, r, outlineColour, glowSize)
+	Camera.drawTo(camera, x, y, function(drawX, drawY)
+		love.graphics.draw(image.image, drawX, drawY, r, 1, 1, image.width/2, image.height/2)
+		
+		love.graphics.setShader(Shader.glow)
+		Shader.glow:send("glowSize", glowSize)
+		Shader.glow:send("innerColour", outlineColour)
+		Shader.glow:send("outerColour", {outlineColour[1], outlineColour[2], outlineColour[3], 0})
+		Shader.glow:send("borderColour", outlineColour)
+		Shader.glow:send("borderSize", 1)
+		Shader.glow:send("imageDimensions", {image.width, image.height})
+		love.graphics.draw(image.image, drawX, drawY, r, 1, 1, image.width/2, image.height/2)
+		love.graphics.setShader()
 	end)
 end
 

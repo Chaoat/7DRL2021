@@ -1,8 +1,9 @@
 local World = {}
 
 function World.new(mapRadius, segmentSize)
-	local world = {physicsSystem = PhysicsSystem.new(), map = nil, pathfindingMap = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}, enemies = {}, chests = {}, items = {}}
+	local world = {physicsSystem = PhysicsSystem.new(), map = nil, pathfindingMap = nil, characters = {}, walls = {}, bullets = {}, explosions = {}, trackingLines = {}, enemies = {}, chests = {}, items = {}, endOrbs = {}, itemLevel = 1}
 	MapGeneration.generateMapFromStructure(MapGeneration.generateMapStructure(mapRadius), segmentSize, world)
+	
 	MapGeneration.populateEnemies(world.map.structure, world)
 	world.pathfindingMap = Pathfinding.newPathfindingMap(world.map)
 	

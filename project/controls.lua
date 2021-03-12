@@ -48,7 +48,8 @@ addControls("weapon8", {"8"})
 addControls("weapon9", {"9"})
 addControls("weapon10", {"0"})
 
-addControls("selectTarget", {"f"})
+addControls("return", {"escape", "i"})
+addControls("examine", {"i"})
 
 addControls("chainFire", {"lshift"})
 

@@ -2,6 +2,11 @@ local Weapon = {}
 
 local function newDeadly(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction, layer)
 	local xOff, yOff = Misc.angleToDir(angle)
+	local tile = Map.getTile(world.map, x + xOff, y + yOff)
+	if Tile.checkBlocking(tile, layer) then
+		xOff = 0
+		yOff = 0
+	end
 	local body = Body.new(x + xOff, y + yOff, world, health, mass, bounce, layer)
 	body.speedPerHealth = 1
 	body.speedThreshold = 0
@@ -56,6 +61,14 @@ local function fireOverSpread(centerAngle, arc, nBullets, func)
 	end
 end
 
+local weaponDescriptions = {}
+local function addWeaponDescription(name, description)
+	weaponDescriptions[name] = description
+end
+function Weapon.getWeaponDescription(name)
+	return weaponDescriptions[name]
+end
+
 do --initialize player weapons
 	do --Bolt Caster
 		local bulletSpeed = 40
@@ -73,6 +86,8 @@ do --initialize player weapons
 			end)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
+		
+		addWeaponDescription("Bolt Caster", "Placeholder")
 	end
 	
 	do --Force Wave
@@ -80,9 +95,11 @@ do --initialize player weapons
 		function(targetX, targetY, firingBody, world)
 			local x = firingBody.x
 			local y = firingBody.y
-			Explosion.ring(x, y, 4, 1, 1, 20, 20, world)
+			Explosion.ring(x, y, 4, 1, 1, 20, 1, world)
 		end, 
 		{0.7, 0.7, 1, 1}, nil)
+		
+		addWeaponDescription("Force Wave", "Placeholder")
 	end
 	
 	do --Hydrocarbon Explosive
@@ -100,6 +117,8 @@ do --initialize player weapons
 			end)
 		end, 
 		{0.8, 0, 0, 1}, simulationBody)
+		
+		addWeaponDescription("Hydrocarbon Explosive", "Placeholder")
 	end
 	
 	do --Matter Compressor
@@ -121,6 +140,8 @@ do --initialize player weapons
 			bullet.body.duration = (dist - 2)/bulletSpeed
 		end, 
 		{0.3, 0.3, 0.3, 1}, simulationBody)
+		
+		addWeaponDescription("Matter Compressor", "Placeholder")
 	end
 	
 	do --Emergency Thruster
@@ -146,6 +167,31 @@ do --initialize player weapons
 			end)
 		end, 
 		{1, 0.6, 0.1, 1}, simulationBody)
+		
+		addWeaponDescription("Emergency Thruster", "Placeholder")
+	end
+
+	do --Entropy Orb
+		local bulletSpeed = 40
+		local bounce = 2
+		local bulletDamage = 500
+		local bulletMass = 4
+		local minSpeed = 5
+		local simulationBody = Body.newRaw(bulletDamage, bulletMass, bounce, "bullet")
+		simulationBody.speed = bulletSpeed
+		simulationBody.minSpeed = minSpeed
+		
+		addWeapon("Entropy Orb", 
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
+			local angle = math.atan2(targetY - y, targetX - x)
+			local bullet = newBullet(x, y, bulletDamage, bulletMass, bounce, world, bulletSpeed, angle, Image.letterToImage("o", {0.8, 0, 0.8, 1}), minSpeed, {0.8, 0, 0.8, 0.6})
+			bullet.body.speedPerHealth = bulletSpeed/100
+		end, 
+		{0.8, 0, 0.8, 1}, simulationBody)
+		
+		addWeaponDescription("Entropy Orb", "Placeholder")
 	end
 end
 
@@ -172,7 +218,7 @@ do --initialize enemy weapons
 			local x = firingBody.x
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x) + Random.randomBetweenPoints(-math.pi/6, math.pi/6)
-			newBullet(x, y, 12, 0.2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 1, 0, 1}), 15, {1, 1, 0, 0.3})
+			newBullet(x, y, 12, 0.2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 1, 0, 1}), 15, {1, 1, 0, 0.1})
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -187,7 +233,7 @@ do --initialize enemy weapons
 			local x = firingBody.x
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
-			Body.impartForce(firingBody, 30, angle + math.pi)
+			Body.impartForce(firingBody, 10, angle + math.pi)
 			newBullet(x, y, 20, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.5, 0.5, 0.5, 1}), 20, {0.7, 0.3, 0, 0.6}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 4, 1.5, 15, 200, world)
 			end)
@@ -252,7 +298,11 @@ function Weapon.drawBullets(bullets, camera)
 		if bullet.body.tile.visible then
 			TileColour.drawColourOnTile({1, 0, 0, 0.2}, bullet.body.tile, camera)
 			love.graphics.setColor(1, 1, 1, 1)
-			Image.drawImage(bullet.image, camera, bullet.body.x, bullet.body.y, bullet.body.angle)
+			local outline = Misc.oscillateBetween(1, 4, 0.5)
+			if globalGame.turnSystem.turnRunning then
+				outline = 0
+			end
+			Image.drawImageWithOutline(bullet.image, camera, bullet.body.x, bullet.body.y, bullet.body.angle, {1, 0, 0, 1}, outline)
 		end
 	end
 end

@@ -9,8 +9,11 @@ function Interface.drawPlayerWeapons(x, y, player)
 		local weapon = player.weapons[i]
 		local columns, colour = Weapon.getPrintInfo(weapon.name)
 		
-		local topX = x + 10
-		local topY = y + 5 + (i - 1)*30
+		local xShift = 150*math.floor((i - 1)/4)
+		local yShift = 30*((i - 1)%4)
+		
+		local topX = x + 10 + xShift
+		local topY = y + 5 + yShift
 		
 		love.graphics.setColor(colour)
 		for j = 1, #columns do
@@ -27,7 +30,13 @@ function Interface.drawPlayerWeapons(x, y, player)
 				boxText = "[x] "
 			end
 		end
+		
+		if globalGame.examining then
+			local flash = math.max(2*((GlobalClock%1) - 0.5), 0)
+			love.graphics.setColor(colour[1] + flash, colour[2] + flash, colour[3] + flash, 1)
+		end
 		love.graphics.printf(boxText, topX, topY, 30, "left")
+		love.graphics.setColor(colour)
 		love.graphics.printf(weapon.ammo, topX + 4, topY + 14, 30, "right")
 	end
 	

@@ -92,6 +92,7 @@ function TurnCalculation.endTurn(game)
 	end
 	
 	Chest.updateChests(world.chests, player)
+	EndOrb.updateOrbs(world.endOrbs, player)
 	
 	Enemy.decideActions(world.enemies, player, turnSystem)
 	

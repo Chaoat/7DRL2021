@@ -2,7 +2,7 @@ local Font = {}
 
 local fonts = {}
 
-function Font.setFont(fontName, fontSize)
+function Font.getFont(fontName, fontSize)
 	if not fonts[fontName] then
 		fonts[fontName] = {}
 	end
@@ -10,7 +10,11 @@ function Font.setFont(fontName, fontSize)
 	if not fonts[fontName][fontSize] then
 		fonts[fontName][fontSize] = love.graphics.newFont("fonts/" .. fontName .. ".ttf", fontSize)
 	end
-	love.graphics.setFont(fonts[fontName][fontSize])
+	return fonts[fontName][fontSize]
+end
+
+function Font.setFont(fontName, fontSize)
+	love.graphics.setFont(Font.getFont(fontName, fontSize))
 end
 
 return Font

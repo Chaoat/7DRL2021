@@ -1,7 +1,7 @@
 local Player = {}
 
 local function updatePlayerTargettingLine(player)
-	if player.targettingLine then
+	if player.targettingLine and player.targettingCoords then
 		local playerTile = player.character.body.tile
 		local newAngle = math.atan2(player.targettingCoords[2] - player.character.body.y, player.targettingCoords[1] - player.character.body.x)
 		TrackingLines.updatePoints(player.targettingLine, playerTile.x, playerTile.y, player.targettingCoords[1], player.targettingCoords[2])
@@ -35,7 +35,8 @@ function Player.new(x, y, world)
 	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
 	--Player.getWeapon(player, "Force Wave", 10)
 	--Player.getWeapon(player, "Matter Compressor", 30)
-	Player.getWeapon(player, "Emergency Thruster", 30)
+	--Player.getWeapon(player, "Emergency Thruster", 30)
+	--Player.getWeapon(player, "Entropy Orb", 30)
 	
 	return player
 end
@@ -53,6 +54,9 @@ function Player.getWeapon(player, weaponName, ammo)
 		weapon = {name = weaponName, ammo = 0}
 		
 		table.insert(player.weapons, weapon)
+		if globalGame then
+			Game.examineWeapon(globalGame, weapon.name, Weapon.getWeaponDescription(weapon.name))
+		end
 	end
 	
 	weapon.ammo = weapon.ammo + ammo
@@ -61,7 +65,9 @@ end
 local function playerMove(player, turnSystem, xDir, yDir)
 	if player.selectingTarget then
 		player.targettingCoords = {player.targettingCoords[1] + xDir, player.targettingCoords[2] + yDir}
-		updatePlayerTargettingLine(player)
+		if not player.examining then
+			updatePlayerTargettingLine(player)
+		end
 	else
 		Character.moveCharacter(player.character, xDir, yDir)
 		
@@ -77,6 +83,7 @@ local function playerMove(player, turnSystem, xDir, yDir)
 					player.targettingLine.destroy = true
 				end
 				player.targettingLine = false
+				player.targettingCharacter = false
 			end
 		end
 		
@@ -86,10 +93,14 @@ end
 
 local function playerTrackCharacter(player)
 	if player.targettingCharacter and player.firingWeapon then
-		local weaponBullet = Weapon.getSimulationTemplate(player.weapons[player.firingWeapon].name)
-		if weaponBullet then
-			player.targettingCoords = TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
-			updatePlayerTargettingLine(player)
+		if player.targettingCharacter.body.destroy then
+			player.targettingCharacter = false
+		else
+			local weaponBullet = Weapon.getSimulationTemplate(player.weapons[player.firingWeapon].name)
+			if weaponBullet then
+				player.targettingCoords = TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
+				updatePlayerTargettingLine(player)
+			end
 		end
 	end
 end
@@ -117,14 +128,6 @@ local function stopTargetSelection(player)
 	end
 end
 
-local function toggleSelectingTarget(player)
-	if not player.selectingTarget then
-		startTargetSelection(player)
-	else
-		stopTargetSelection(player)
-	end
-end
-
 local areaWeapons = {}
 areaWeapons["Force Wave"] = true
 
@@ -141,6 +144,7 @@ local function playerSelectWeapon(player, index)
 				player.targettingLine.destroy = true
 			end
 			player.targettingLine = false
+			player.targettingCharacter = false
 		end
 		--end
 	elseif player.weapons[index].ammo > 0 then
@@ -162,6 +166,10 @@ local function playerSelectWeapon(player, index)
 end
 
 function Player.endTurnUpdate(player)
+	if player.character.body.destroy and not player.dead and globalGame.transition.over then
+		player.dead = true
+		globalGame.transition = ScreenTransitions.die()
+	end
 	playerTrackCharacter(player)
 end
 
@@ -184,8 +192,6 @@ function Player.keyInput(turnSystem, player, key)
 		playerMove(player, turnSystem, 0, 1)
 	elseif Controls.checkControl(key, "botRight") then
 		playerMove(player, turnSystem, 1, 1)
-	--elseif Controls.checkControl(key, "selectTarget") then
-	--	toggleSelectingTarget(player)
 	else
 		for i = 1, #player.weapons do
 			if Controls.checkControl(key, "weapon" .. i) then
@@ -205,6 +211,10 @@ function Player.drawTargettingHighlight(player, camera)
 			love.graphics.setLineWidth(2)
 			love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
 		end)
+	end
+	if player.targettingCharacter then
+		love.graphics.setColor(1, 1, 1, 1)
+		Image.drawImage(Image.getImage("targettingReticle"), camera, player.targettingCharacter.body.tile.x, player.targettingCharacter.body.tile.y, GlobalClock)
 	end
 end
 

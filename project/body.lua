@@ -8,8 +8,13 @@ function Body.newRaw(health, mass, bounce, layer)
 end
 
 function Body.anchor(body)
-	body.mass = 99999
+	body.mass = 9999
 	body.friction = 100
+end
+
+function Body.setInvincible(body)
+	body.invincible = true
+	body.health = 9999
 end
 
 function Body.duplicateRaw(body)
@@ -90,10 +95,12 @@ function Body.destroy(body)
 end
 
 function Body.damage(body, damage)
-	body.health = body.health - damage
-	if body.health <= 0 then
-		body.health = 0
-		Body.destroy(body)
+	if not body.invincible then
+		body.health = body.health - damage
+		if body.health <= 0 then
+			body.health = 0
+			Body.destroy(body)
+		end
 	end
 end
 

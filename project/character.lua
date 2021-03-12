@@ -1,8 +1,15 @@
 local Character = {}
 
-function Character.new(body, stepStrength, image)
+function Character.new(body, stepStrength, image, name, text)
+	if not name then
+		name = "placeholder"
+	end
+	if not text then
+		text = "placeholder"
+	end
+	
 	local world = body.world
-	local character = {body = body, stepStrength = stepStrength, image = image, targetX = body.x, targetY = body.y, world = world, lostFooting = false, parent = false}
+	local character = {body = body, stepStrength = stepStrength, image = image, targetX = body.x, targetY = body.y, world = world, lostFooting = false, parent = false, name = name, text = text}
 	body.parent = character
 	character.trackingLine = TrackingLines.new(body.x, body.y, body.x, body.y, body, GlobalTurnTime, {1, 1, 0, 0.4}, world)
 	TrackingLines.clear(character.trackingLine)
@@ -14,29 +21,36 @@ function Character.new(body, stepStrength, image)
 end
 
 function Character.update(character, turnTimeLeft, dt)
-	if not character.lostFooting then
-		local body = character.body
-		local targetDistance = math.sqrt((character.targetX - body.x)^2 + (character.targetY - body.y)^2)
-		local targetAngle = math.atan2(character.targetY - body.y, character.targetX - body.x)
-		
-		local targetSpeed = targetDistance/turnTimeLeft
-		local speedTo, angleTo = PhysicsSystem.findVectorBetween(body.speed, body.angle, targetSpeed, targetAngle)
-		
-		Body.impartForce(body, math.min(speedTo, character.stepStrength*dt)*body.mass, angleTo)
-		
-		if not character.flying and (not character.body.tile.floored or character.body.speed > character.stepStrength/5) then
-			character.lostFooting = true
+	if character.stepStrength > 0 then
+		if not character.lostFooting then
+			local body = character.body
+			local targetDistance = math.sqrt((character.targetX - body.x)^2 + (character.targetY - body.y)^2)
+			local targetAngle = math.atan2(character.targetY - body.y, character.targetX - body.x)
+			
+			local targetSpeed = targetDistance/turnTimeLeft
+			local speedTo, angleTo = PhysicsSystem.findVectorBetween(body.speed, body.angle, targetSpeed, targetAngle)
+			
+			Body.impartForce(body, math.min(speedTo, character.stepStrength*dt)*body.mass, angleTo)
+			
+			if not character.flying and (not character.body.tile.floored or character.body.speed > character.stepStrength/5) then
+				character.lostFooting = true
+			end
+		elseif character.body.tile.floored and character.body.speed <= character.stepStrength/5 then
+			character.lostFooting = false
+			character.targetX = Misc.round(character.body.x)
+			character.targetY = Misc.round(character.body.y)
 		end
-	elseif character.body.tile.floored and character.body.speed <= character.stepStrength/5 then
-		character.lostFooting = false
-		character.targetX = Misc.round(character.body.x)
-		character.targetY = Misc.round(character.body.y)
+	else
+		character.lostFooting = true
+		character.targetX = character.body.x
+		character.targetY = character.body.y
 	end
 end
 
 function Character.updateCharacterTrackingLines(characters)
 	for i = 1, #characters do
 		local character = characters[i]
+		
 		if character.body.destroy then
 			character.trackingLine.destroy = true
 		else
@@ -58,6 +72,22 @@ function Character.moveCharacter(character, x, y)
 	character.targetY = Misc.round(character.body.y + y)
 end
 
+function Character.clearCharacters(characters, parentList)
+	for i = 1, #parentList do
+		parentList[i].character.destroy = true
+	end
+	
+	local i = #characters
+	while i > 0 do
+		local character = characters[i]
+		if character.destroy then
+			character.body.destroy = true
+			table.remove(characters, i)
+		end
+		i = i - 1
+	end
+end
+
 function Character.drawCharacters(characters, camera)
 	for i = 1, #characters do
 		local character = characters[i]
@@ -66,7 +96,12 @@ function Character.drawCharacters(characters, camera)
 			if character.body.destroy then
 				love.graphics.setColor(0.3, 0.3, 0.3, 1)
 			else
-				TileColour.drawColourOnTile({0.5, 0.5, 0, 0.2}, tile, camera)
+				if globalGame.examining then
+					local flash = 2*((GlobalClock%1) - 0.5)
+					TileColour.drawColourOnTile({0.5 + flash, 0.5 + flash, flash, 0.2 + flash}, tile, camera)
+				else
+					TileColour.drawColourOnTile({0.5, 0.5, 0, 0.2}, tile, camera)
+				end
 				
 				love.graphics.setColor(1, 1, 1, 1)
 			end

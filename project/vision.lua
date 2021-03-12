@@ -105,11 +105,11 @@ function Vision.getTilesInVision(world, centerX, centerY, radius, condition)
 	local function checkNode(x, y)
 		local node = visionTree[x][y]
 		if node.checkParity ~= currentCheckParity then
-			node.checkParity = currentCheckParity
+			node.checkParity = radius + visionTreeSize*currentCheckParity + 1
 			
 			node.blocked = false
 			for i = 1, #node.blockers do
-				if node.blockers[i].blocked then
+				if node.blockers[i].blocked and node.blockers[i].checkParity == node.checkParity then
 					node.blocked = true
 					break
 				end
@@ -124,7 +124,7 @@ function Vision.getTilesInVision(world, centerX, centerY, radius, condition)
 					node.blocked = true
 					for i = 1, #node.blocking do
 						node.blocking[i].blocked = true
-						node.blocking[i].checkParity = currentCheckParity
+						node.blocking[i].checkParity = radius + visionTreeSize*currentCheckParity + 1
 					end
 				end
 			end
@@ -149,66 +149,6 @@ function Vision.checkVisible(world, centerX, centerY, radius)
 	for i = 1, #tiles do
 		Tile.seeTile(tiles[i])
 	end
-end
-
-function Vision.checkVisibleOLD(world, centerX, centerY, radius)
-	local descendVisionTree
-	descendVisionTree = function(visionNode)
-		visionNode.checkParity = currentCheckParity
-		
-		local map = world.map
-		local tile = Map.getTile(map, centerX + visionNode.xOff, centerY + visionNode.yOff)
-		Tile.seeTile(tile)
-		
-		if #tile.bodies["wall"] == 0 then
-			for i = 1, #visionNode.children do
-				--print(visionNode.children[i].xOff .. ":" .. visionNode.children[i].yOff)
-				local child = visionNode.children[i]
-				if child.checkParity ~= currentCheckParity then
-					descendVisionTree(visionNode.children[i])
-				end
-			end
-		end
-	end
-	
-	expandVisionTree(radius)
-	descendVisionTree(visionTree[0][0])
-	
-	currentCheckParity = (currentCheckParity + 1)%2
-end
-
-function Vision.getTilesInVisionOLD(world, x, y, radius, condition)
-	--condition(tile)
-	local tiles = {}
-	
-	local map = world.map
-	expandVisionTree(radius)
-	local checking = {visionTree[0][0]}
-	while #checking > 0 do
-		local visionNode = checking[1]
-		visionNode.checkParity = currentCheckParity
-		local tile = Map.getTile(map, x + visionNode.xOff, y + visionNode.yOff)
-		if tile then
-			if #tile.bodies["wall"] == 0 then
-				if condition and condition(tile) then
-					table.insert(tiles, tile)
-				end
-				
-				for i = 1, #visionNode.children do
-					local child = visionNode.children[i]
-					if child.checkParity ~= currentCheckParity then
-						table.insert(checking, child)
-					end
-				end
-			end
-		end
-		
-		table.remove(checking, 1)
-	end
-	
-	currentCheckParity = (currentCheckParity + 1)%2
-	
-	return tiles
 end
 
 function Vision.findClosestEnemy(world, x, y, range)
@@ -240,6 +180,13 @@ function Vision.debugDrawRoute(tileX, tileY, centerX, centerY, camera)
 		cX = nX
 		cY = nY
 	end
+end
+
+function Vision.fullResetVision(map)
+	Map.iterateOverTileRange(map, {map.minCoords[1], map.maxCoords[1]}, {map.minCoords[2], map.maxCoords[2]}, 
+	function(tile)
+		tile.visible = false
+	end)
 end
 
 return Vision

@@ -27,7 +27,10 @@ Interface = require("interface")
 TrackingLines = require("trackingLines")
 Pathfinding = require("pathfinding")
 Chest = require("chest")
+InfoScreen = require("infoScreen")
+ScreenTransitions = require("screenTransitions")
 
+EndOrb = require("endOrb")
 Wall = require("wall")
 Enemy = require("enemy")
 
@@ -35,7 +38,7 @@ local profile = require("profile")
 
 GlobalClock = 0
 
-local globalGame
+globalGame = nil
 local testStructure
 function love.load()
 	math.randomseed(os.clock())

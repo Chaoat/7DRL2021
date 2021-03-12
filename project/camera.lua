@@ -19,8 +19,11 @@ function Camera.screenToLogicCoords(x, y, cameraCorner, camera)
 	return (x - camera.canvasDims[1]/2)/camera.tileDims[1] + camera.x, (y - camera.canvasDims[2]/2)/camera.tileDims[2] + camera.y
 end
 
-function Camera.update(camera, dt)
-	if camera.followingBody then
+function Camera.update(camera, examining, dt)
+	if examining then
+		camera.x = examining[1]
+		camera.y = examining[2]
+	elseif camera.followingBody then
 		camera.x = camera.followingBody.x
 		camera.y = camera.followingBody.y
 	end

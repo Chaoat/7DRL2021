@@ -112,4 +112,8 @@ function Misc.plotLine(x1, y1, x2, y2)
 	return tileList
 end
 
+function Misc.oscillateBetween(a, b, period)
+	return a + (b - a)*(math.cos((GlobalClock*math.pi)/period) + 1)/2
+end
+
 return Misc

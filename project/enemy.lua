@@ -10,17 +10,39 @@ function Enemy.new(name, x, y, character, aiFunction)
 	return enemy
 end
 
+local function dodge(enemy, speed)
+	local body = enemy.character.body
+	local dodgeNeeded = Tile.checkDangerous(body.tile)
+	if dodgeNeeded then
+		local availableTiles = Vision.getTilesInVision(body.world, body.tile.x, body.tile.y, speed, function(tile)
+			return not Tile.checkDangerous(tile)
+		end)
+		
+		if #availableTiles > 0 then
+			local target = Random.randomFromList(availableTiles)
+			enemy.character.targetX = target.x
+			enemy.character.targetY = target.y
+			return true
+		end
+	end
+	return false
+end
+
 local function pathfindAwayFromPlayer(enemy, player, speed)
 	local angle = math.atan2(enemy.character.body.y - player.character.body.y, enemy.character.body.x - player.character.body.x)
 	local offX, offY = Misc.angleToDir(angle)
 	
+	speed = speed + 1
 	local eBody = enemy.character.body
 	local path = Pathfinding.findPath(enemy.character.body.world.pathfindingMap, {eBody.tile.x, eBody.tile.y}, {Misc.round(eBody.tile.x + speed*offX), Misc.round(eBody.tile.y + speed*offY)}, 1)
+	print(path)
 	if path then
-		local targetCoords = path[math.min(speed + 1, #path)]
-		return targetCoords
+		local targetCoords = path[math.min(speed, #path)]
+		enemy.character.targetX = targetCoords[1]
+		enemy.character.targetY = targetCoords[2]
 	else
-		return {enemy.character.body.x, enemy.character.body.y}
+		enemy.character.targetX = enemy.character.body.x
+		enemy.character.targetY = enemy.character.body.y
 	end
 end
 
@@ -28,9 +50,11 @@ local function pathfindToPlayer(enemy, player, speed)
 	local path = Pathfinding.findPath(enemy.character.body.world.pathfindingMap, {enemy.character.body.tile.x, enemy.character.body.tile.y}, {player.character.body.tile.x, player.character.body.tile.y}, 1)
 	if path then
 		local targetCoords = path[math.min(speed + 1, #path)]
-		return targetCoords
+		enemy.character.targetX = targetCoords[1]
+		enemy.character.targetY = targetCoords[2]
 	else
-		return {enemy.character.body.x, enemy.character.body.y}
+		enemy.character.targetX = enemy.character.body.x
+		enemy.character.targetY = enemy.character.body.y
 	end
 end
 
@@ -54,17 +78,17 @@ do --initEnemies
 					local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
 					local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
 					if dist > 4 or enemy.reloading > 0 then
-						character.targetX = Misc.round(body.x + 2*math.cos(angle))
-						character.targetY = Misc.round(body.y + 2*math.sin(angle))
+						if not dodge(enemy, 1) then
+							character.targetX = Misc.round(body.x + 2*math.cos(angle))
+							character.targetY = Misc.round(body.y + 2*math.sin(angle))
+						end
 					else
 						enemy.firing = true
 						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Harpy Blaster", playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
 						enemy.reloading = 3
 					end
 				else
-					local targetCoords = pathfindToPlayer(enemy, player, 1)
-					character.targetX = targetCoords[1]
-					character.targetY = targetCoords[2]
+					pathfindToPlayer(enemy, player, 1)
 				end
 			end
 		end
@@ -89,33 +113,30 @@ do --initEnemies
 				local approach = false
 				local run = false
 				if not enemy.firing then
-					if body.tile.visible then
-						local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
-						local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
-						
-						if dist <= 8 then
-							run = true
-						elseif dist <= 15 then
-							if enemy.reloading == 0 then
-								enemy.firing = true
-								enemy.weaponDischarge = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Junk Rocket", playerBody.x, playerBody.y, body, body.world), body, 0.6, turnSystem)
-								enemy.targettingLine = Weapon.simulateFire("Junk Rocket", body.x, body.y, playerBody.x, playerBody.y, body.world)
+					if not dodge(enemy, 1) then
+						if body.tile.visible then
+							local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
+							local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
+							
+							if dist <= 8 then
+								run = true
+							elseif dist <= 15 then
+								if enemy.reloading == 0 then
+									enemy.firing = true
+									enemy.weaponDischarge = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Junk Rocket", playerBody.x, playerBody.y, body, body.world), body, 0.6, turnSystem)
+									enemy.targettingLine = Weapon.simulateFire("Junk Rocket", body.x, body.y, playerBody.x, playerBody.y, body.world)
+									enemy.targettingLine.creatorBody = body
+								end
 							end
+						else
+							approach = true
 						end
-					else
-						approach = true
-					end
-					
-					local targetCoords = false
-					if approach then
-						targetCoords = pathfindToPlayer(enemy, player, 1)
-					elseif run then
-						targetCoords = pathfindAwayFromPlayer(enemy, player, 1)
-					end
-					
-					if targetCoords then
-						character.targetX = targetCoords[1]
-						character.targetY = targetCoords[2]
+						
+						if approach then
+							pathfindToPlayer(enemy, player, 1)
+						elseif run then
+							pathfindAwayFromPlayer(enemy, player, 1)
+						end
 					end
 				else
 					if enemy.weaponDischarge.fired then
@@ -170,7 +191,7 @@ function Enemy.warnEnemy(enemy, amount)
 		enemy.warned = math.min(enemy.warned + amount, warnLimit)
 		if enemy.warned >= warnLimit then
 			enemy.alerted = true
-			Enemy.shout(enemy.character.body, 8, 5)
+			Enemy.shout(enemy.character.body, 4, 3)
 		end
 	end
 end

@@ -65,7 +65,7 @@ local function isolatedArea(mapStructure, x1, y1, x2, y2, nEntrances)
 end
 function MapGeneration.generateMapStructure(radius)
 	local pathLength = 0
-	local requiredLength = 2*radius
+	local requiredLength = radius
 	while pathLength < requiredLength do
 		local mapStructure = newMapStructure(2*radius + 3, 2*radius + 3)
 		
@@ -115,6 +115,8 @@ function MapGeneration.generateMapStructure(radius)
 		if pathLength >= requiredLength then
 			mapStructure.nodes[2*radius + 1][radius + 1].rightOpen = true
 			mapStructure.nodes[radius + 1][2*radius + 1].botOpen = true
+			mapStructure.nodes[1][radius + 1].leftOpen = true
+			mapStructure.nodes[radius + 1][1].topOpen = true
 			
 			return mapStructure
 		end
@@ -199,6 +201,7 @@ function MapGeneration.testDrawStructure(x, y, mapStructure)
 				if node.leftOpen then
 					love.graphics.line(16*i, 16*j, 16*i - 8, 16*j)
 				end
+				love.graphics.print(node.danger, 16*i, 16*j)
 			end
 		end
 	end
@@ -218,7 +221,7 @@ local function spreadDanger(centerNode, mapStructure, danger)
 	
 	local checking = {{centerNode, danger}}
 	local function addNeighboursToList(node, newDanger)
-		if node.leftOpen then
+		if node.leftOpen and node.x > 1 then
 			local neighbour = mapStructure.nodes[node.x - 1][node.y]
 			if neighbour and not checked[key(neighbour)] then
 				table.insert(checking, {neighbour, newDanger})
@@ -232,7 +235,7 @@ local function spreadDanger(centerNode, mapStructure, danger)
 				checked[key(neighbour)] = true
 			end
 		end
-		if node.topOpen then
+		if node.topOpen and node.y > 1 then
 			local neighbour = mapStructure.nodes[node.x][node.y - 1]
 			if neighbour and not checked[key(neighbour)] then
 				table.insert(checking, {neighbour, newDanger})
@@ -261,7 +264,7 @@ local function spreadDanger(centerNode, mapStructure, danger)
 	end
 end
 
-local function setDanger(centerNode, mapStructure, radius, targetDanger)
+function MapGeneration.setDanger(centerNode, mapStructure, radius, targetDanger)
 	local function key(node)
 		return node.x .. ":" .. node.y
 	end	
@@ -271,7 +274,7 @@ local function setDanger(centerNode, mapStructure, radius, targetDanger)
 	
 	local checking = {{centerNode, radius}}
 	local function addNeighboursToList(node, newDanger)
-		if node.leftOpen then
+		if node.leftOpen and node.x > 1 then
 			local neighbour = mapStructure.nodes[node.x - 1][node.y]
 			if neighbour and not checked[key(neighbour)] then
 				table.insert(checking, {neighbour, newDanger})
@@ -283,7 +286,7 @@ local function setDanger(centerNode, mapStructure, radius, targetDanger)
 				table.insert(checking, {neighbour, newDanger})
 			end
 		end
-		if node.topOpen then
+		if node.topOpen and node.y > 1 then
 			local neighbour = mapStructure.nodes[node.x][node.y - 1]
 			if neighbour and not checked[key(neighbour)] then
 				table.insert(checking, {neighbour, newDanger})
@@ -369,9 +372,13 @@ function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world
 	end
 	
 	MapGeneration.populateChests(mapStructure, world)
+	MapGeneration.placeEndOrbs(mapStructure, world)
 	spreadDanger(mapStructure.nodes[math.floor(mapStructure.width/2)][math.floor(mapStructure.height/2)], mapStructure, 4)
 	
-	setDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, 6, 0)
+	MapGeneration.setDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, 3, 0)
+	MapGeneration.setDanger(mapStructure.nodes[1][math.floor(mapStructure.height/2)], mapStructure, 3, 0)
+	MapGeneration.setDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][1], mapStructure, 3, 0)
+	MapGeneration.setDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][mapStructure.height - 2], mapStructure, 3, 0)
 end
 
 function MapGeneration.populateChests(mapStructure, world)
@@ -400,6 +407,41 @@ function MapGeneration.populateChests(mapStructure, world)
 					Chest.new(Misc.round(Random.randomBetweenPoints(spawnBounds.x[1], spawnBounds.x[2])), Misc.round(Random.randomBetweenPoints(spawnBounds.y[1], spawnBounds.y[2])), world)
 					spreadDanger(node, mapStructure, 4)
 				end
+			end
+		end
+	end
+end
+
+function MapGeneration.placeEndOrbs(mapStructure, world)
+	local centerX = math.floor(mapStructure.width/2)
+	local centerY = math.floor(mapStructure.width/2)
+	local spawnBounds = getInternalBoundsFromNode(mapStructure.nodes[centerX][centerY], mapStructure.segmentSize, world.map)
+	
+	local possiblePositions = {}
+	for x = spawnBounds.x[1], spawnBounds.x[2] do
+		for y = spawnBounds.y[1], spawnBounds.y[2] do
+			table.insert(possiblePositions, {x, y})
+		end
+	end
+	
+	local locationsFound = false
+	while not locationsFound do
+		local spawnLocations = Random.nRandomFromList(possiblePositions, 3)
+		locationsFound = true
+		for i = 1, 3 do
+			local l1 = spawnLocations[i]
+			for j = i + 1, 3 do
+				local l2 = spawnLocations[j]
+				if Misc.orthogDistance(l1[1], l1[2], l2[1], l2[2]) <= 2 then
+					locationsFound = false
+					break
+				end
+			end
+		end
+		
+		if locationsFound then
+			for i = 1, 3 do
+				EndOrb.new(spawnLocations[i][1], spawnLocations[i][2], world)
 			end
 		end
 	end
@@ -454,6 +496,17 @@ function MapGeneration.populateEnemies(mapStructure, world)
 				for i = 1, #spawnLocations do
 					Enemy.spawnEnemy(spawnList[i], spawnLocations[i][1], spawnLocations[i][2], world)
 				end
+			end
+		end
+	end
+end
+
+function MapGeneration.multiplyThreat(mapStructure, multiple)
+	for i = 1, mapStructure.width do
+		for j = 1, mapStructure.height do
+			local node = mapStructure.nodes[i][j]
+			if node then
+				node.danger = Misc.round(node.danger*multiple)
 			end
 		end
 	end

@@ -12,6 +12,10 @@ do --initItemRarities
 	newItemEntry(1, "Bolt Caster", 15, Image.letterToImage("-", {0, 0.8, 0, 1}))
 	newItemEntry(1, "Force Wave", 12, Image.letterToImage("*", {0.8, 0.8, 1, 1}))
 	newItemEntry(1, "Hydrocarbon Explosive", 4, Image.letterToImage("o", {0.4, 0, 0, 1}))
+	
+	newItemEntry(2, "Matter Compressor", 12, Image.letterToImage(">", {0.2, 0.2, 0.2, 1}))
+	newItemEntry(2, "Emergeny Thruster", 8, Image.letterToImage("^", {1, 0.7, 0, 1}))
+	newItemEntry(2, "Entropy Orb", 10, Image.letterToImage("Y", {0.8, 0, 0.8, 1}))
 end
 
 local function newItem(x, y, itemEntry, world)
@@ -42,7 +46,11 @@ function Chest.new(x, y, world)
 	local chest = {character = Character.new(Body.new(x, y, world, 10, 100, 0, "character"), 0, Image.letterToImage("#", {0.2, 0.9, 0.9, 1}))}
 	
 	chest.character.body.destroyFunction = function(body)
-		openChest(body.x, body.y, {1}, {1, 2}, world)
+		local rarities = {}
+		for i = 1, world.itemLevel do
+			rarities[i] = i
+		end
+		openChest(body.x, body.y, rarities, {1, 2}, world)
 	end
 	
 	Body.anchor(chest.character.body)
@@ -87,7 +95,7 @@ function Chest.drawItems(items, camera)
 		if item.body.tile.visible then
 			TileColour.drawColourOnTile({0, 1, 1, 0.2}, item.body.tile, camera)
 			love.graphics.setColor(1, 1, 1, 1)
-			Image.drawImage(item.image, camera, item.body.x, item.body.y, item.angle)
+			Image.drawImageWithOutline(item.image, camera, item.body.x, item.body.y, item.angle, {0, 1, 1, 1}, Misc.oscillateBetween(2, 5, 0.5))
 		end
 	end
 end

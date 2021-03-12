@@ -1,7 +1,7 @@
 local Tile = {}
 
 function Tile.new(x, y, health, map)
-	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false, remembered = false, floored = false, trailColour = {0, 0, 0, 0}, lastTrailUpdate = GlobalClock}
+	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false, remembered = false, floored = false, danger = {}, trailColour = {0, 0, 0, 0}, lastTrailUpdate = GlobalClock}
 	local layers = Layers.getAllLayers()
 	
 	for i = 1, #layers do
@@ -82,6 +82,22 @@ function Tile.seeTile(tile)
 			Enemy.warnEnemy(body.parent.parent, 3)
 		end
 	end
+end
+
+function Tile.checkDangerous(tile)
+	local i = #tile.danger
+	while i > 0 do
+		local danger = tile.danger[i]
+		
+		if danger.destroy then
+			table.remove(tile.danger, i)
+		else
+			return true
+		end
+		
+		i = i - 1
+	end
+	return false
 end
 
 function Tile.draw(tile, camera)
