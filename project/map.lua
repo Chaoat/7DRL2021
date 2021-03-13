@@ -49,9 +49,14 @@ end
 
 function Map.iterateOverTileRange(map, xRange, yRange, func)
 	--func(tile)
-	for i = math.max(map.minCoords[1], xRange[1]), math.min(map.maxCoords[1], xRange[2]) do
-		for j = math.max(map.minCoords[2], yRange[1]), math.min(map.maxCoords[2], yRange[2]) do
-			func(map.tileMap[i][j])
+	local minX = math.min(math.max(map.minCoords[1], xRange[1]), map.maxCoords[1] + 1)
+	local maxX = math.min(math.max(map.minCoords[1] - 1, xRange[2]), map.maxCoords[1])
+	local minY = math.min(math.max(map.minCoords[2], yRange[1]), map.maxCoords[2] + 1)
+	local maxY = math.min(math.max(map.minCoords[2] - 1, yRange[2]), map.maxCoords[2])
+	for i = minX, maxX do
+		for j = minY, maxY do
+			--print(minX .. ":" .. maxX .. "|" .. minY .. ":" .. maxY)
+			func(Map.getTile(map, i, j))
 		end
 	end
 end
@@ -70,7 +75,9 @@ function Map.getTile(map, x, y)
 end
 
 function Map.drawTiles(map, camera)
-	Map.iterateOverAllTiles(map, function(tile)
+	local xRange = {camera.x - math.ceil(0.5*camera.canvasDims[1]/camera.tileDims[1]), camera.x + math.ceil(0.5*camera.canvasDims[1]/camera.tileDims[1])}
+	local yRange = {camera.y - math.ceil(0.5*camera.canvasDims[2]/camera.tileDims[2]), camera.y + math.ceil(0.5*camera.canvasDims[2]/camera.tileDims[2])}
+	Map.iterateOverTileRange(map, xRange, yRange, function(tile)
 		Tile.draw(tile, camera)
 	end)
 end

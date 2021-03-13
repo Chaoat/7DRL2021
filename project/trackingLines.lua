@@ -125,4 +125,22 @@ function TrackingLines.findIntercept(x, y, speed, tCharacter)
 	end
 end
 
+function TrackingLines.checkTiles(map, line, condition)
+	for i = 1, #line.points do
+		local point = line.points[i]
+		local tile = Map.getTile(map, point[1], point[2])
+		
+		if condition(tile) then
+			return true
+		end
+	end
+	return false
+end
+
+function TrackingLines.totalLength(line)
+	local firstPoint = line.points[1]
+	local lastPoint = line.points[#line.points]
+	return math.sqrt((lastPoint[1] - firstPoint[1])^2 + (lastPoint[2] - firstPoint[2])^2)
+end
+
 return TrackingLines

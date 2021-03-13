@@ -151,17 +151,26 @@ function Vision.checkVisible(world, centerX, centerY, radius)
 	end
 end
 
-function Vision.findClosestEnemy(world, x, y, range)
+function Vision.findVisibleEnemies(world, x, y, range)
 	local tiles = Vision.getTilesInVision(world, x, y, range, function(tile)
 		return #tile.bodies["character"] > 0
 	end)
 	
+	local bodies = {}
 	for i = 1, #tiles do
 		local tile = tiles[i]
 		local body = tile.bodies["character"][1]
-		if body.parent.parent then
-			return body
+		if body.parent.parent and not body.simulation then
+			table.insert(bodies, body)
 		end
+	end
+	return bodies
+end
+
+function Vision.findClosestEnemy(world, x, y, range)
+	local enemyBodies = Vision.findVisibleEnemies(world, x, y, range)
+	if #enemyBodies > 0 then
+		return enemyBodies[1]
 	end
 	return false
 end

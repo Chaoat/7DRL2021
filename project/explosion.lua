@@ -1,7 +1,7 @@
 local Explosion = {}
 
-local function newParticle(x, y, radius, angle, damage, mass, speed, colour1, colour2, world)
-	local body = Body.new(x, y, world, damage, mass, 1, "explosion")
+local function newParticle(x, y, radius, angle, damage, mass, speed, colour1, colour2, bounce, world)
+	local body = Body.new(x, y, world, damage, mass, bounce, "explosion")
 	body.speedPerHealth = 1
 	body.speedThreshold = 0
 	local particle = {body = body, tileColour = TileColour.new(colour1, colour2, radius/speed)}
@@ -14,13 +14,17 @@ local function newParticle(x, y, radius, angle, damage, mass, speed, colour1, co
 	return particle
 end
 
-function Explosion.explode(x, y, radius, mass, speed, damage, world)
+function Explosion.colouredExplosion(x, y, radius, mass, speed, damage, world, colour1, colour2)
 	local nParticles = 3*math.ceil(2*radius*math.pi)
 	local partDamage = damage/nParticles
 	for i = 1, nParticles do
 		local angle = 2*math.pi*(i/nParticles)
-		newParticle(x, y, radius, angle, partDamage, mass, speed, {1, 1, 0.8, 1}, {1, 0.5, 0.1, 0.7}, world)
+		newParticle(x, y, radius, angle, partDamage, mass, speed, colour1, colour2, 1, world)
 	end
+end
+
+function Explosion.explode(x, y, radius, mass, speed, damage, world)
+	Explosion.colouredExplosion(x, y, radius, mass, speed, damage, world, {1, 1, 0.8, 1}, {1, 0.5, 0.1, 0.7})
 end
 
 function Explosion.ring(x, y, radius, ringSize, mass, speed, damage, world)
@@ -30,7 +34,18 @@ function Explosion.ring(x, y, radius, ringSize, mass, speed, damage, world)
 		local angle = 2*math.pi*(i/nParticles)
 		local rX = Misc.round(x + ringSize*math.cos(angle))
 		local rY = Misc.round(y + ringSize*math.sin(angle))
-		newParticle(rX, rY, radius, angle, partDamage, mass, speed, {0.9, 0.9, 1, 0.8}, {0.4, 0.4, 0.5, 0.4}, world)
+		newParticle(rX, rY, radius, angle, partDamage, mass, speed, {0.9, 0.9, 1, 0.8}, {0.4, 0.4, 0.5, 0.4}, 0, world)
+	end
+end
+
+function Explosion.targettedBlast(x, y, radius, angle, width, mass, speed, damage, world)
+	local nParticles = 3*math.ceil(radius*width)
+	local partDamage = damage/nParticles
+	for i = 1, nParticles do
+		local angle = angle + width*(-0.5 + i/nParticles)
+		local rX = x
+		local rY = y
+		newParticle(rX, rY, radius, angle, partDamage, mass, speed, {0.9, 0.9, 1, 0.8}, {0.4, 0.4, 0.5, 0.4}, 1, world)
 	end
 end
 

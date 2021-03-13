@@ -25,7 +25,7 @@ local function addControls(control, keys)
 	end
 end
 
-addControls("turnEnd", {"space"})
+--addControls("turnEnd", {"space"})
 
 addControls("topLeft", {"kp7", "q"})
 addControls("top", {"kp8", "w"})
@@ -50,6 +50,7 @@ addControls("weapon10", {"0"})
 
 addControls("return", {"escape", "i"})
 addControls("examine", {"i"})
+addControls("cycleTargets", {"tab", "t"})
 
 addControls("chainFire", {"lshift"})
 

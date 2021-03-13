@@ -3,6 +3,7 @@ local Camera = {}
 function Camera.new(cameraWidth, cameraHeight, tileWidth, tileHeight)
 	local canvas = CanvasCache.getCanvas(cameraWidth, cameraHeight)
 	local camera = {x = 0, y = 0, canvas = canvas, canvasDims = {cameraWidth, cameraHeight}, tileDims = {tileWidth, tileHeight}, followingBody = nil}
+	camera.starSystem = Stars.newStarSystem(camera)
 	return camera
 end
 
@@ -19,13 +20,20 @@ function Camera.screenToLogicCoords(x, y, cameraCorner, camera)
 	return (x - camera.canvasDims[1]/2)/camera.tileDims[1] + camera.x, (y - camera.canvasDims[2]/2)/camera.tileDims[2] + camera.y
 end
 
+local function moveCamera(camera, newX, newY)
+	local xChange = newX - camera.x
+	local yChange = newY - camera.y
+	camera.starSystem.x = camera.starSystem.x + xChange
+	camera.starSystem.y = camera.starSystem.y + yChange
+	camera.x = newX
+	camera.y = newY
+end
+
 function Camera.update(camera, examining, dt)
 	if examining then
-		camera.x = examining[1]
-		camera.y = examining[2]
+		moveCamera(camera, examining[1], examining[2])
 	elseif camera.followingBody then
-		camera.x = camera.followingBody.x
-		camera.y = camera.followingBody.y
+		moveCamera(camera, camera.followingBody.x, camera.followingBody.y)
 	end
 end
 

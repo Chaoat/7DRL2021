@@ -254,9 +254,13 @@ local function spreadDanger(centerNode, mapStructure, danger)
 	while #checking > 0 do
 		local nextNode = checking[1][1]
 		local newDanger = checking[1][2] - 1
-		nextNode.danger = nextNode.danger + checking[1][2]
+		if danger < 0 then
+			newDanger = checking[1][2] + 1
+		end
 		
-		if newDanger > 0 then
+		nextNode.danger = math.max(nextNode.danger + checking[1][2], 0)
+		
+		if newDanger ~= 0 then
 			addNeighboursToList(nextNode, newDanger)
 		end
 		
@@ -373,12 +377,12 @@ function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world
 	
 	MapGeneration.populateChests(mapStructure, world)
 	MapGeneration.placeEndOrbs(mapStructure, world)
-	spreadDanger(mapStructure.nodes[math.floor(mapStructure.width/2)][math.floor(mapStructure.height/2)], mapStructure, 4)
+	spreadDanger(mapStructure.nodes[math.floor(mapStructure.width/2)][math.floor(mapStructure.height/2)], mapStructure, 6)
 	
-	MapGeneration.setDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, 3, 0)
-	MapGeneration.setDanger(mapStructure.nodes[1][math.floor(mapStructure.height/2)], mapStructure, 3, 0)
-	MapGeneration.setDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][1], mapStructure, 3, 0)
-	MapGeneration.setDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][mapStructure.height - 2], mapStructure, 3, 0)
+	spreadDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, -6)
+	spreadDanger(mapStructure.nodes[1][math.floor(mapStructure.height/2)], mapStructure, -6)
+	spreadDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][1], mapStructure, -6)
+	spreadDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][mapStructure.height - 2], mapStructure, -6)
 end
 
 function MapGeneration.populateChests(mapStructure, world)
@@ -461,6 +465,11 @@ do --initEnemyParties
 	newEnemyEntry(1, "Harpy")
 	newEnemyEntry(2, "Gremlin")
 	newEnemyEntry(3, "Saturation Turret")
+	newEnemyEntry(6, "Missile Battery")
+	newEnemyEntry(5, "Leaper")
+	newEnemyEntry(8, "Psiclops")
+	newEnemyEntry(10, "Wyvern")
+	newEnemyEntry(12, "Eye of Madness")
 end
 
 function MapGeneration.populateEnemies(mapStructure, world)
@@ -474,7 +483,8 @@ function MapGeneration.populateEnemies(mapStructure, world)
 					local chosenDanger
 					local enemyEntry
 					while not enemyEntry do
-						chosenDanger = Misc.round(Random.randomBetweenPoints(1, math.min(maxDangerEnemy, dangerLeft)))
+						local maxDanger = math.min(maxDangerEnemy, dangerLeft)
+						chosenDanger = Misc.round(Random.randomBetweenPoints(math.floor(maxDanger/2), maxDanger))
 						if enemyEntries[chosenDanger] then
 							enemyEntry = Random.randomFromList(enemyEntries[chosenDanger])
 						end

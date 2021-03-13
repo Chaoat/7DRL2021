@@ -8,9 +8,9 @@ local function updatePlayerTargettingLine(player)
 	end
 end
 
-function Player.new(x, y, world)
-	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}))
-	local player = {character = character, viewRange = 15, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
+function Player.new(x, y, world, startingKit)
+	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}), "The Runner", "Selected through a year long competition between all the people of your generation, the champion chosen not just by their skill in bolt and wave, but by their quick wit and determined attitude. Many of your peers shared a mastery of all these skills, however you alone had the dedication and courage necessary to guard yourself from the psychic emanations of The Devourer. The final test awaits.")
+	local player = {character = character, viewRange = 15, enemyTargets = {}, enemyTargetI = 0, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
 	
 	local function onMove(oldTile)
 		if oldTile then
@@ -31,12 +31,18 @@ function Player.new(x, y, world)
 	onMove()
 	Body.addMoveCallback(character.body, onMove)
 	
-	Player.getWeapon(player, "Bolt Caster", 30)
+	for i = 1, #startingKit do
+		Player.getWeapon(player, startingKit[i][1], startingKit[i][2])
+	end
+	
+	--Player.getWeapon(player, "Bolt Caster", 30)
 	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
 	--Player.getWeapon(player, "Force Wave", 10)
 	--Player.getWeapon(player, "Matter Compressor", 30)
 	--Player.getWeapon(player, "Emergency Thruster", 30)
 	--Player.getWeapon(player, "Entropy Orb", 30)
+	
+	--Enemy.spawnEnemy("Psiclops", x - 2, y, world)
 	
 	return player
 end
@@ -91,6 +97,16 @@ local function playerMove(player, turnSystem, xDir, yDir)
 	end
 end
 
+local function cycleTargets(player)
+	if #player.enemyTargets > 0 then
+		player.enemyTargetI = 1 + (player.enemyTargetI%#player.enemyTargets)
+		
+		local target = player.enemyTargets[player.enemyTargetI]
+		player.targettingCoords = {target.x, target.y}
+		updatePlayerTargettingLine(player)
+	end
+end
+
 local function playerTrackCharacter(player)
 	if player.targettingCharacter and player.firingWeapon then
 		if player.targettingCharacter.body.destroy then
@@ -98,7 +114,7 @@ local function playerTrackCharacter(player)
 		else
 			local weaponBullet = Weapon.getSimulationTemplate(player.weapons[player.firingWeapon].name)
 			if weaponBullet then
-				player.targettingCoords = TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
+				player.targettingCoords = {player.targettingCharacter.body.tile.x, player.targettingCharacter.body.tile.y}--TrackingLines.findIntercept(player.character.body.x, player.character.body.y, weaponBullet.speed, player.targettingCharacter)
 				updatePlayerTargettingLine(player)
 			end
 		end
@@ -108,9 +124,10 @@ end
 local function startTargetSelection(player)
 	if not player.firingWeapon and not player.selectingTarget then
 		local body = player.character.body
-		local closestEnemy = Vision.findClosestEnemy(body.world, body.x, body.y, player.viewRange)
-		if closestEnemy then
-			player.targettingCoords = {closestEnemy.x, closestEnemy.y}
+		player.enemyTargets = Vision.findVisibleEnemies(body.world, body.x, body.y, player.viewRange)
+		player.enemyTargetI = 0
+		if #player.enemyTargets > 0 then
+			cycleTargets(player)
 		else
 			player.targettingCoords = {body.x, body.y}
 		end
@@ -157,7 +174,12 @@ local function playerSelectWeapon(player, index)
 		end
 		
 		local body = player.character.body
-		player.targettingLine = Weapon.simulateFire(player.weapons[index].name, body.x, body.y, player.targettingCoords[1], player.targettingCoords[2], body.world)
+		if player.targettingCoords then
+			player.targettingLine = Weapon.simulateFire(player.weapons[index].name, body.x, body.y, player.targettingCoords[1], player.targettingCoords[2], body.world)
+		end
+		if player.targettingLine and player.targettingLine.colour then
+			player.targettingLine.colour = {0, 1, 0, 0.4}
+		end
 		player.firingWeapon = index
 		player.chainFiring = Controls.checkControlHeld("chainFire")
 		
@@ -192,6 +214,8 @@ function Player.keyInput(turnSystem, player, key)
 		playerMove(player, turnSystem, 0, 1)
 	elseif Controls.checkControl(key, "botRight") then
 		playerMove(player, turnSystem, 1, 1)
+	elseif Controls.checkControl(key, "cycleTargets") then
+		cycleTargets(player)
 	else
 		for i = 1, #player.weapons do
 			if Controls.checkControl(key, "weapon" .. i) then
@@ -205,16 +229,11 @@ function Player.drawTargettingHighlight(player, camera)
 	if player.selectingTarget then
 		local tile = Map.getTile(player.character.body.map, player.targettingCoords[1], player.targettingCoords[2])
 		
-		Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-			love.graphics.setColor(1, 0, 0, 1)
-			love.graphics.setLineStyle("rough")
-			love.graphics.setLineWidth(2)
-			love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-		end)
-	end
-	if player.targettingCharacter then
 		love.graphics.setColor(1, 1, 1, 1)
-		Image.drawImage(Image.getImage("targettingReticle"), camera, player.targettingCharacter.body.tile.x, player.targettingCharacter.body.tile.y, GlobalClock)
+		Image.drawImage(Image.getImage("targetCursor"), camera, tile.x, tile.y, GlobalClock)
+	elseif player.targettingCoords and player.firingWeapon then
+		love.graphics.setColor(1, 1, 1, 1)
+		Image.drawImage(Image.getImage("targettingReticle"), camera, player.targettingCoords[1], player.targettingCoords[2], GlobalClock)
 	end
 end
 

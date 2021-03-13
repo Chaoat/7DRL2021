@@ -9,6 +9,15 @@ Shader.pixelateTextShader = love.graphics.newShader [[
 	}
 ]]
 
+Shader.colourAdd = love.graphics.newShader [[
+	vec4 effect(vec4 colour, Image image, vec2 texture_coords, vec2 pixel_coords)
+    {
+		vec4 pix = Texel(image, texture_coords);
+		
+		return vec4(pix[0] + colour[0], pix[1] + colour[1], pix[2] + colour[2], pix[3]);
+	}
+]]
+
 Shader.glow = love.graphics.newShader [[
 	extern number glowSize;
 	extern vec4 innerColour;

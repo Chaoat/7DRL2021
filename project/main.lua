@@ -15,7 +15,7 @@ Character = require("character")
 Vector = require("vector")
 Player = require("player")
 Vision = require("vision")
-MapGeneration = require("MapGeneration")
+MapGeneration = require("mapGeneration")
 Random = require("randomFunctions")
 Weapon = require("weapon")
 Explosion = require("explosion")
@@ -29,6 +29,7 @@ Pathfinding = require("pathfinding")
 Chest = require("chest")
 InfoScreen = require("infoScreen")
 ScreenTransitions = require("screenTransitions")
+Stars = require("stars")
 
 EndOrb = require("endOrb")
 Wall = require("wall")
@@ -53,6 +54,10 @@ function love.update(dt)
 	Game.update(globalGame, dt)
 	
 	profile.update(dt)
+end
+
+function love.resize(w, h)
+	Game.resize(globalGame, w, h)
 end
 
 function love.keypressed(key, scancode, isrepeat)

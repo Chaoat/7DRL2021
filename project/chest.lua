@@ -12,9 +12,9 @@ do --initItemRarities
 	newItemEntry(1, "Bolt Caster", 15, Image.letterToImage("-", {0, 0.8, 0, 1}))
 	newItemEntry(1, "Force Wave", 12, Image.letterToImage("*", {0.8, 0.8, 1, 1}))
 	newItemEntry(1, "Hydrocarbon Explosive", 4, Image.letterToImage("o", {0.4, 0, 0, 1}))
+	newItemEntry(1, "Emergency Thruster", 8, Image.letterToImage("^", {1, 0.7, 0, 1}))
 	
 	newItemEntry(2, "Matter Compressor", 12, Image.letterToImage(">", {0.2, 0.2, 0.2, 1}))
-	newItemEntry(2, "Emergeny Thruster", 8, Image.letterToImage("^", {1, 0.7, 0, 1}))
 	newItemEntry(2, "Entropy Orb", 10, Image.letterToImage("Y", {0.8, 0, 0.8, 1}))
 end
 
@@ -43,14 +43,14 @@ local function openChest(x, y, rarities, itemNumberRange, world)
 end
 
 function Chest.new(x, y, world)
-	local chest = {character = Character.new(Body.new(x, y, world, 10, 100, 0, "character"), 0, Image.letterToImage("#", {0.2, 0.9, 0.9, 1}))}
+	local chest = {character = Character.new(Body.new(x, y, world, 10, 100, 0, "character"), 0, Image.letterToImage("#", {0.2, 0.9, 0.9, 1}), "Cargo Pod", "A temporally sealed chamber designed to open only in your presence, or in the presence of extreme firepower. Threaded with powerful charms, this box is invisible to The Devourer and his minions, so you needn't worry about your weapons being stolen. That said, opening the pod without shattering the charms is not an option given your current toolkit, and while the pods can be refilled they can not be replaced. The combined scientific might of your people is concentrated on developing weapons to assist the next Runner, so it would be best to keep a few of the pods intact for their use.\n\nEvery generation will unlock new weapons that can spawn in the pods, however the pods themselves will not be restored. What this amounts to is that you should not go out of your way to bust open all the pods on the level, as this will severely diminish your chances of complete victory.")}
 	
 	chest.character.body.destroyFunction = function(body)
 		local rarities = {}
 		for i = 1, world.itemLevel do
 			rarities[i] = i
 		end
-		openChest(body.x, body.y, rarities, {1, 2}, world)
+		openChest(body.x, body.y, rarities, {2, 3}, world)
 	end
 	
 	Body.anchor(chest.character.body)
@@ -93,7 +93,7 @@ function Chest.drawItems(items, camera)
 	for i = 1, #items do
 		local item = items[i]
 		if item.body.tile.visible then
-			TileColour.drawColourOnTile({0, 1, 1, 0.2}, item.body.tile, camera)
+			TileColour.drawColourOnTile({0, 1, 1, 0.5}, item.body.tile, camera)
 			love.graphics.setColor(1, 1, 1, 1)
 			Image.drawImageWithOutline(item.image, camera, item.body.x, item.body.y, item.angle, {0, 1, 1, 1}, Misc.oscillateBetween(2, 5, 0.5))
 		end

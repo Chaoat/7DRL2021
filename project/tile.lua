@@ -65,7 +65,11 @@ function Tile.checkBlocking(tile, layer)
 	local collidingLayers = Layers.getCollidingLayers(layer)
 	for i = 1, #collidingLayers do
 		if #tile.bodies[collidingLayers[i]] > 0 then
-			return true
+			for j = 1, #tile.bodies[collidingLayers[i]] do
+				if not tile.bodies[collidingLayers[i]][j].simulation then
+					return true
+				end
+			end
 		end
 	end
 	return false
@@ -102,20 +106,26 @@ end
 
 function Tile.draw(tile, camera)
 	local gc = GlobalClock
-	if (tile.visible or tile.remembered) and tile.floored then
-		local tileImage = Image.getImage("tiles/floor")
-		local parity = (tile.x + tile.y)%2
-		local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
-		if not tile.visible then
-			colour[4] = 0.2
+	if (tile.visible or tile.remembered) then
+		if tile.floored then
+			local tileImage = Image.getImage("tiles/floor")
+			local parity = (tile.x + tile.y)%2
+			local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
+			if not tile.visible then
+				colour[1] = 0.5*colour[1]
+				colour[2] = 0.5*colour[2]
+				colour[3] = 0.5*colour[3]
+			end
+			
+			love.graphics.setLineWidth(2)
+			
+			Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+				love.graphics.setColor(colour)
+				love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+				--love.graphics.setColor({0.1, 0.1, 0.1, colour[4]})
+				--love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+			end)
 		end
-		
-		Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-			love.graphics.setColor(colour)
-			love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-			love.graphics.setColor({0.1, 0.1, 0.1, colour[4]})
-			love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-		end)
 		
 		if tile.trailColour[4] > 0 then
 			local dt = gc - tile.lastTrailUpdate
@@ -127,6 +137,13 @@ function Tile.draw(tile, camera)
 			end)
 		end
 		tile.lastTrailUpdate = gc
+	else
+		if tile.floored then
+			Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
+				love.graphics.setColor(0, 0, 0, 1)
+				love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
+			end)
+		end
 	end
 end
 

@@ -23,14 +23,20 @@ function Game.new()
 	return game
 end
 
+local playerAngles = {0, math.pi/2, math.pi, -math.pi/2}
+local startingKits = {}
+startingKits[1] = {{"Bolt Caster", 30}, {"Force Wave", 6}}
+startingKits[2] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Hydrocarbon Explosive", 6}}
+startingKits[3] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Hydrocarbon Explosive", 6}}
 function Game.spawnPlayer(game)
 	local side = math.floor(Random.randomBetweenPoints(0, 4))
-	local angle = (math.pi/2)*side
+	local angle, angleI = Random.randomFromList(playerAngles)
+	table.remove(playerAngles, angleI)
 	
 	local spawnX = Misc.round(44*math.cos(angle))
 	local spawnY = Misc.round(44*math.sin(angle))
 	
-	game.player = Player.new(spawnX, spawnY, game.world)
+	game.player = Player.new(spawnX, spawnY, game.world, startingKits[currentLevel])
 	game.mainCamera.followingBody = game.player.character.body
 	Camera.update(game.mainCamera, game.examining, 0)
 end
@@ -61,12 +67,12 @@ function Game.nextLevel(game)
 		Character.clearCharacters(game.world.characters, {game.player})
 		
 		game.world.enemies = {}
-		MapGeneration.multiplyThreat(game.world.map.structure, 1.5)
+		MapGeneration.multiplyThreat(game.world.map.structure, 2)
 		MapGeneration.populateEnemies(game.world.map.structure, game.world)
 		
 		Vision.fullResetVision(game.world.map)
-		Game.spawnPlayer(game)
 		currentLevel = currentLevel + 1
+		Game.spawnPlayer(game)
 		InfoScreen.displayInfoScreen(levelStartTexts[currentLevel][1], levelStartTexts[currentLevel][2])
 	end
 end
@@ -77,7 +83,7 @@ end
 
 local function stopExamining(game)
 	local examiningTile = Map.getTile(game.world.map, game.examining[1], game.examining[2])
-	if #examiningTile.bodies["character"] > 0 then
+	if examiningTile.visible and #examiningTile.bodies["character"] > 0 then
 		local character = examiningTile.bodies["character"][1].parent
 		InfoScreen.displayInfoScreen(character.name, character.text)
 	end
@@ -88,6 +94,13 @@ end
 function Game.examineWeapon(game, weaponName, weaponText)
 	InfoScreen.displayInfoScreen(weaponName, weaponText)
 	game.examining = false
+end
+
+function Game.resize(game, width, height)
+	width = math.min(width, 1000)
+	height = math.min(height, 1000)
+	game.mainCamera = Camera.new(width, height - 150, GlobalTileDims[1], GlobalTileDims[2])
+	game.mainCamera.followingBody = game.player.character.body
 end
 
 local function examiningMoveInput(game, key)
@@ -165,18 +178,24 @@ function Game.handleKeyboardInput(game, key)
 end
 
 function Game.draw(game)
+	local ScreenWidth = math.min(love.graphics.getWidth(), 1000)
+	local xOff = math.ceil((love.graphics.getWidth() - ScreenWidth)/2)
+	local ScreenHeight = math.min(love.graphics.getHeight(), 1000)
+	local yOff = math.floor((love.graphics.getHeight() - ScreenHeight)/2)
+	
 	--print("newDrawStep")
 	Camera.reset(game.mainCamera)
 	
+	Stars.draw(xOff, yOff, game.mainCamera.starSystem, game.mainCamera)
 	World.draw(game.world, not game.turnSystem.turnRunning, game.mainCamera)
 	Player.drawTargettingHighlight(game.player, game.mainCamera)
 	
 	--Pathfinding.visualizeMap(game.world.pathfindingMap, game.player.character.body, game.mainCamera)
 	InfoScreen.drawExamineCursor(game, game.mainCamera)
-	Camera.draw(0, 0, game.mainCamera)
+	Camera.draw(xOff, yOff, game.mainCamera)
 	
-	Interface.drawPlayerWeapons(0, 450, game.player)
-	InfoScreen.drawInfoScreen(20, 20, 760, 410)
+	Interface.drawPlayerInterface(xOff, yOff + ScreenHeight - 150, ScreenWidth, 150, game.player)
+	InfoScreen.drawInfoScreen(xOff + 20, yOff + 20, ScreenWidth - 40, ScreenHeight - 250)
 	
 	--local lX, lY = Camera.screenToLogicCoords(love.mouse.getX(), love.mouse.getY(), {0, 0}, game.mainCamera)
 	--Vision.debugDrawRoute(Misc.round(lX - game.mainCamera.x), Misc.round(lY - game.mainCamera.y), game.player.character.body.tile.x, game.player.character.body.tile.y, game.mainCamera)

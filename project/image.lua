@@ -46,8 +46,8 @@ function Image.letterToImage(letter, colour)
 	
 	Font.setFont("437", 1.5*height)
 	
-	width = width + 6
-	height = height + 6
+	width = width + 8
+	height = height + 8
 	
 	local canvas = CanvasCache.getCanvas(width, height)
 	canvas:setFilter('nearest', 'nearest')
@@ -56,7 +56,7 @@ function Image.letterToImage(letter, colour)
 	
 	Shader.pixelateTextShader:send("threshold", 0.5)
 	love.graphics.setShader(Shader.pixelateTextShader)
-	love.graphics.printf(letter, 3, 3 - 0.2*height, 1.1*width, "center")
+	love.graphics.printf(letter, 0, 4 - 0.2*height, 1.1*width, "center")
 	love.graphics.setShader()
 	
 	love.graphics.setCanvas()

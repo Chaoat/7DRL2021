@@ -45,7 +45,7 @@ local function findNeighbours(wall)
 end
 
 function Wall.new(world, x, y)
-	local wall = {body = Body.new(x, y, world, 200, 60, 0.4, "wall"), neighbours = {false, false, false, false}}
+	local wall = {body = Body.new(x, y, world, 200, 50, 0.4, "wall"), neighbours = {false, false, false, false}}
 	wall.body.parent = wall
 	
 	local function onMove(oldTile)
@@ -133,7 +133,7 @@ function Wall.drawWalls(walls, camera)
 				alpha = 0.2
 			end
 			
-			TileColour.drawColourOnTile({0.6, 0.6, 0.6, 0.3}, wall.body.tile, camera)
+			TileColour.drawColourOnTile({0.6, 0.6, 0.6, 0.5}, wall.body.tile, camera)
 			
 			love.graphics.setLineWidth(2)
 			love.graphics.setLineStyle("rough")

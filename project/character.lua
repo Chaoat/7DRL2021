@@ -54,12 +54,16 @@ function Character.updateCharacterTrackingLines(characters)
 		if character.body.destroy then
 			character.trackingLine.destroy = true
 		else
-			if character.lostFooting then
-				TrackingLines.changeSpeed(character.trackingLine, character.body.speed)
-				local xOff, yOff = Misc.angleToOffset(character.body.angle, 1)
-				TrackingLines.updatePoints(character.trackingLine, character.body.x, character.body.y, character.body.x + xOff, character.body.y + yOff)
-			elseif character.targetX ~= character.body.tile.x or character.targetY ~= character.body.tile.y then
-				TrackingLines.lineBetween(character.trackingLine, {character.body.x, character.body.y}, {character.targetX, character.targetY})
+			if character.stepStrength > 0 then
+				if character.lostFooting or character.flying then
+					TrackingLines.changeSpeed(character.trackingLine, character.body.speed)
+					local xOff, yOff = Misc.angleToOffset(character.body.angle, 1)
+					TrackingLines.updatePoints(character.trackingLine, character.body.x, character.body.y, character.body.x + xOff, character.body.y + yOff)
+				elseif character.targetX ~= character.body.tile.x or character.targetY ~= character.body.tile.y then
+					TrackingLines.lineBetween(character.trackingLine, {character.body.x, character.body.y}, {character.targetX, character.targetY})
+				else
+					TrackingLines.clear(character.trackingLine)
+				end
 			else
 				TrackingLines.clear(character.trackingLine)
 			end
@@ -81,7 +85,11 @@ function Character.clearCharacters(characters, parentList)
 	while i > 0 do
 		local character = characters[i]
 		if character.destroy then
-			character.body.destroy = true
+			local body = character.body
+			body.destroy = true
+			Map.addTileToCleanQueue(body.map, body.tile, body.layer)
+			Map.cleanAllTiles(body.map)
+			character.trackingLine.destroy = true
 			table.remove(characters, i)
 		end
 		i = i - 1
@@ -95,17 +103,26 @@ function Character.drawCharacters(characters, camera)
 		if tile.visible then
 			if character.body.destroy then
 				love.graphics.setColor(0.3, 0.3, 0.3, 1)
+				Image.drawImage(character.image, camera, character.body.x, character.body.y, 0)
 			else
 				if globalGame.examining then
 					local flash = 2*((GlobalClock%1) - 0.5)
-					TileColour.drawColourOnTile({0.5 + flash, 0.5 + flash, flash, 0.2 + flash}, tile, camera)
+					TileColour.drawColourOnTile({0.5 + flash, 0.5 + flash, flash, 0.5 + flash}, tile, camera)
 				else
-					TileColour.drawColourOnTile({0.5, 0.5, 0, 0.2}, tile, camera)
+					TileColour.drawColourOnTile({0.5, 0.5, 0, 0.5}, tile, camera)
 				end
 				
-				love.graphics.setColor(1, 1, 1, 1)
+				if character.parent and character.parent.firing then
+					local brightness = Misc.oscillateBetween(0, 1, 0.2)
+					love.graphics.setColor(brightness, brightness, brightness, 1)
+					love.graphics.setShader(Shader.colourAdd)
+				else
+					love.graphics.setColor(1, 1, 1, 1)
+				end
+				Image.drawImageWithOutline(character.image, camera, character.body.x, character.body.y, 0, {0, 0, 0, 1}, 2)
 			end
-			Image.drawImage(character.image, camera, character.body.x, character.body.y, 0)
+			
+			love.graphics.setShader()
 			
 			local body = character.body
 			if body.health < body.maxHealth and not body.destroy then

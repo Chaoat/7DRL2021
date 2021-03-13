@@ -42,10 +42,25 @@ function TurnCalculation.updateTurn(game, dt)
 	local turnSystem = game.turnSystem
 	
 	if turnSystem.turnRunning then
-		if turnSystem.stepSize > 0.05 then
+		if turnSystem.stepSize > 0.05 and #turnSystem.weaponDischarges == 0 then
 			dt = turnSystem.stepSize
 		end
 		dt = math.min(turnSystem.turnLeft, dt)
+		
+		local newBodies = false
+		while #turnSystem.weaponDischarges > 0 and turnSystem.weaponDischarges[1].triggerTime <= turnSystem.turnDuration - turnSystem.turnLeft do
+			if not turnSystem.weaponDischarges[1].cancel then
+				if not turnSystem.weaponDischarges[1].firingBody.destroy then
+					newBodies = true
+					turnSystem.weaponDischarges[1].func()
+				end
+				turnSystem.weaponDischarges[1].fired = true
+			end
+			table.remove(turnSystem.weaponDischarges, 1)
+		end
+		if newBodies then
+			calculateStepSize(turnSystem, world)
+		end
 		
 		local stepTime = dt
 		while stepTime > 0 do
@@ -62,19 +77,6 @@ function TurnCalculation.updateTurn(game, dt)
 		end
 		
 		turnSystem.turnLeft = turnSystem.turnLeft - dt
-		
-		local newBodies = false
-		while #turnSystem.weaponDischarges > 0 and turnSystem.weaponDischarges[1].triggerTime <= turnSystem.turnDuration - turnSystem.turnLeft do
-			if not turnSystem.weaponDischarges[1].firingBody.destroy then
-				newBodies = true
-				turnSystem.weaponDischarges[1].func()
-			end
-			turnSystem.weaponDischarges[1].fired = true
-			table.remove(turnSystem.weaponDischarges, 1)
-		end
-		if newBodies then
-			calculateStepSize(turnSystem, world)
-		end
 		
 		if turnSystem.turnLeft <= 0 then
 			TurnCalculation.endTurn(game)

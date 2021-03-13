@@ -2,7 +2,7 @@ local Body = {}
 
 local ID = 0
 function Body.newRaw(health, mass, bounce, layer)
-	local body = {x = nil, y = nil, health = health, maxHealth = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 10, parent = nil}
+	local body = {x = nil, y = nil, health = health, maxHealth = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 5, parent = nil}
 	ID = ID + 1
 	return body
 end
@@ -15,6 +15,10 @@ end
 function Body.setInvincible(body)
 	body.invincible = true
 	body.health = 9999
+end
+
+function Body.setTracking(body, targetBody, force, targetSpeed)
+	body.tracking = {targetBody = targetBody, force = force, targetSpeed = targetSpeed}
 end
 
 function Body.duplicateRaw(body)
@@ -67,6 +71,17 @@ function Body.update(body, dt, ignoreCollisions)
 		--Body.update(body, dt)
 	end
 	
+	if body.tracking then
+		local targetBody = body.tracking.targetBody
+		local targetDistance = math.sqrt((targetBody.x - body.x)^2 + (targetBody.y - body.y)^2)
+		local targetAngle = math.atan2(targetBody.y - body.y, targetBody.x - body.x)
+		
+		local targetSpeed = body.tracking.targetSpeed
+		local speedTo, angleTo = PhysicsSystem.findVectorBetween(body.speed, body.angle, targetSpeed, targetAngle)
+		
+		Body.impartForce(body, math.min(speedTo*body.mass, body.tracking.force*dt), angleTo)
+	end
+	
 	if body.minSpeed then
 		if body.speed < body.minSpeed then
 			Body.destroy(body)
@@ -85,6 +100,7 @@ end
 function Body.destroy(body)
 	if not body.destroy then
 		body.destroy = true
+		
 		if not body.simulation and body.destroyFunction then
 			body.destroyFunction(body)
 		end
@@ -149,6 +165,9 @@ function Body.debugDrawBodies(bodies, camera)
 		Camera.drawTo(camera, body.x, body.y, function(drawX, drawY)
 			--love.graphics.circle("fill", drawX, drawY, 7)
 			love.graphics.print(math.ceil(body.speed), drawX, drawY)
+			if body.simulation then
+				love.graphics.circle("fill", drawX, drawY, 4)
+			end
 		end)
 	end
 end
