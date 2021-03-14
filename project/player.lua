@@ -31,8 +31,6 @@ function Player.new(x, y, world, startingKit, game)
 		updatePlayerTargettingLine(player)
 		Chest.getItemsOnTile(playerTile, player)
 		
-		Tile.updateCanvas(world.map, game.mainCamera)
-		
 		--print(player.character.body.tile.x .. "--" .. player.character.body.tile.y)
 		Sound.setCenter(playerTile.x, playerTile.y)
 	end

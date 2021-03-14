@@ -29,6 +29,7 @@ function Game.new()
 	shipAmbience:seek(0)
 	shipAmbience:play()
 	
+	Tile.updateCanvas(game.world.map, game.mainCamera)
 	
 	return game
 end
@@ -46,8 +47,9 @@ function Game.spawnPlayer(game)
 	local spawnX = Misc.round(54*math.cos(angle))
 	local spawnY = Misc.round(54*math.sin(angle))
 	
-	game.mainCamera.x = spawnX
-	game.mainCamera.y = spawnY
+	--game.mainCamera.x = spawnX
+	--game.mainCamera.y = spawnY
+	--Camera.update(game.mainCamera, false, game.world, 0)
 	
 	game.player = Player.new(spawnX, spawnY, game.world, startingKits[currentLevel], game)
 	game.mainCamera.followingBody = game.player.character.body
@@ -56,7 +58,7 @@ end
 function Game.update(game, dt)
 	TurnCalculation.updateTurn(game, dt)
 	if not InfoScreen.getDisplaying() then
-		Camera.update(game.mainCamera, game.examining, dt)
+		Camera.update(game.mainCamera, game.examining, game.world, dt)
 	end
 	
 	if game.player.dead then
@@ -93,6 +95,8 @@ function Game.nextLevel(game)
 		currentLevel = currentLevel + 1
 		Game.spawnPlayer(game)
 		InfoScreen.displayInfoScreen(levelStartTexts[currentLevel][1], levelStartTexts[currentLevel][2])
+		
+		Tile.updateCanvas(game.world.map, game.mainCamera)
 	end
 end
 
@@ -120,6 +124,8 @@ function Game.resize(game, width, height)
 	height = math.min(height, 1000)
 	game.mainCamera = Camera.new(width, height - 150, GlobalTileDims[1], GlobalTileDims[2])
 	game.mainCamera.followingBody = game.player.character.body
+	
+	Camera.moveCamera(game.mainCamera, game.world, game.player.character.body.x, game.player.character.body.y)
 end
 
 local function examiningMoveInput(game, key)

@@ -75,7 +75,7 @@ function Interface.drawPlayerControls(x, y, width)
 	controlText = controlText .. "keypad/qwe-asd-z c : move" .. "\n"
 	controlText = controlText .. "kp5/space : wait" .. "\n"
 	controlText = controlText .. "    1-0 : prepare weapon" .. "\n"
-	controlText = controlText .. "        i : examine" .. "\n"
+	controlText = controlText .. "        i/x : examine" .. "\n"
 	controlText = controlText .. "lshift + 1-0 : chain fire" .. "\n"
 	controlText = controlText .. "    tab/t : cycle targets" .. "\n"
 	

@@ -49,7 +49,7 @@ addControls("weapon9", {"9"})
 addControls("weapon10", {"0"})
 
 addControls("return", {"escape", "i"})
-addControls("examine", {"i"})
+addControls("examine", {"i", "x"})
 addControls("cycleTargets", {"tab", "t"})
 addControls("restart", {"r"})
 

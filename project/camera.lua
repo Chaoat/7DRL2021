@@ -20,7 +20,12 @@ function Camera.screenToLogicCoords(x, y, cameraCorner, camera)
 	return (x - camera.canvasDims[1]/2)/camera.tileDims[1] + camera.x, (y - camera.canvasDims[2]/2)/camera.tileDims[2] + camera.y
 end
 
-local function moveCamera(camera, newX, newY)
+function Camera.moveCamera(camera, world, newX, newY)
+	if Misc.round(camera.x) ~= Misc.round(newX) or Misc.round(camera.y) ~= Misc.round(newY) then
+
+		Tile.updateCanvas(world.map, camera)
+	end
+	
 	local xChange = newX - camera.x
 	local yChange = newY - camera.y
 	camera.starSystem.x = camera.starSystem.x + xChange
@@ -29,11 +34,11 @@ local function moveCamera(camera, newX, newY)
 	camera.y = newY
 end
 
-function Camera.update(camera, examining, dt)
+function Camera.update(camera, examining, world, dt)
 	if examining then
-		moveCamera(camera, examining[1], examining[2])
+		Camera.moveCamera(camera, world, examining[1], examining[2])
 	elseif camera.followingBody then
-		moveCamera(camera, camera.followingBody.x, camera.followingBody.y)
+		Camera.moveCamera(camera, world, camera.followingBody.x, camera.followingBody.y)
 	end
 end
 

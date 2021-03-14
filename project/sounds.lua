@@ -38,6 +38,8 @@ function Sound.updateVolume(loopSound, newX, newY)
 	if dist <= maxSoundDist then
 		local mod = 1 - dist/maxSoundDist
 		loopSound[1]:setVolume(loopSound[2]*mod)
+	else
+		loopSound[1]:setVolume(0)
 	end
 end
 

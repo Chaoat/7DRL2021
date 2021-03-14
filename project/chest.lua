@@ -9,7 +9,7 @@ local function newItemEntry(rarity, weaponName, quantity, itemImage)
 	table.insert(itemRarities[rarity], entry)
 end
 do --initItemRarities
-	newItemEntry(1, "Bolt Caster", 16, Image.letterToImage("-", {0, 0.8, 0, 1}))
+	newItemEntry(1, "Bolt Caster", 20, Image.letterToImage("-", {0, 0.8, 0, 1}))
 	newItemEntry(1, "Force Wave", 12, Image.letterToImage("*", {0.8, 0.8, 1, 1}))
 	newItemEntry(1, "Hydrocarbon Explosive", 4, Image.letterToImage("o", {0.4, 0, 0, 1}))
 	newItemEntry(1, "Emergency Thruster", 8, Image.letterToImage("^", {1, 0.7, 0, 1}))
