@@ -1,0 +1,21 @@
+Shotgun: FilmmakersManual
+ShotgunReload: AbuNijmeh
+ShipAmbience: https://freesound.org/people/DrNI/sounds/34736/
+Death Male by Replix: https://freesound.org/people/Replix/sounds/173126/
+Ratdeath by psychentist: https://freesound.org/people/psychentist/sounds/168567/
+Computer Breaking Sound by thehorriblejoke: https://freesound.org/people/thehorriblejoke/sounds/505751/
+Throw by denao270: https://freesound.org/people/denao270/sounds/346373/
+Dragon Wing by Brsjak: https://freesound.org/people/Brsjak/sounds/483095/
+SMG by tehlordoswag420: https://freesound.org/people/tehlordoswag420/sounds/249779/
+MissileBlast by Magnuswaker: https://freesound.org/people/magnuswaker/sounds/540068/
+Jetpack by jacksonacademyashmore: https://freesound.org/people/jacksonacademyashmore/sounds/402816/
+Explosions by Deganoth: https://freesound.org/people/Deganoth/sounds/349129/
+Plasma Slinger by dpren: https://freesound.org/people/dpren/sounds/440146/
+Energy Riser 2 by Magnuswaker: https://freesound.org/people/magnuswaker/sounds/523057/
+PlayerHurt by Christopherderp: https://freesound.org/people/Christopherderp/sounds/342229/
+Metal Impact by Yoyodaman234 https://freesound.org/people/Yoyodaman234/sounds/334678/
+Missile Launcher by bolkmar: https://freesound.org/people/bolkmar/sounds/455918/
+Shield Hit by MortisBlack: https://freesound.org/people/MortisBlack/sounds/385051/
+Transform by CurlyHayami: https://freesound.org/people/CurlyHayami/sounds/45897/
+Charging by DrMrSir: https://freesound.org/people/DrMrSir/sounds/529554/
+Laser by SamsterBirdies: https://freesound.org/people/SamsterBirdies/sounds/542579/
