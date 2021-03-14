@@ -8,8 +8,8 @@ local function updatePlayerTargettingLine(player)
 	end
 end
 
-function Player.new(x, y, world, startingKit)
-	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}), "The Runner", "Selected through a year long competition between all the people of your generation, the champion chosen not just by their skill in bolt and wave, but by their quick wit and determined attitude. Many of your peers shared a mastery of all these skills, however you alone had the dedication and courage necessary to guard yourself from the psychic emanations of The Devourer. The final test awaits.")
+function Player.new(x, y, world, startingKit, game)
+	local character = Character.new(Body.new(x, y, world, 200, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}), "The Runner", "Selected through a year long competition between all the people of your generation, the champion chosen not just by their skill in bolt and wave, but by their quick wit and determined attitude. Many of your peers shared a mastery of all these skills, however you alone had the dedication and courage necessary to guard yourself from the psychic emanations of The Devourer. The final test awaits.")
 	local player = {character = character, viewRange = 15, enemyTargets = {}, enemyTargetI = 0, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
 	
 	character.body.bloody = true
@@ -26,6 +26,8 @@ function Player.new(x, y, world, startingKit)
 		
 		updatePlayerTargettingLine(player)
 		Chest.getItemsOnTile(playerTile, player)
+		
+		Tile.updateCanvas(world.map, game.mainCamera)
 		
 		--print(player.character.body.tile.x .. "--" .. player.character.body.tile.y)
 	end

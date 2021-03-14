@@ -1,5 +1,14 @@
 local Tile = {}
 
+local segmentSize
+local tileCanvas
+function Tile.initTileCanvas(width, height, sS)
+	segmentSize = sS
+	tileCanvas = love.graphics.newCanvas(width - 2*GlobalTileDims[1]*sS, height - 2*GlobalTileDims[2]*sS)
+	love.graphics.setCanvas(tileCanvas)
+	love.graphics.setCanvas()
+end
+
 function Tile.new(x, y, health, map)
 	local parity = (x + y)%2
 	local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
@@ -15,12 +24,13 @@ function Tile.new(x, y, health, map)
 	return tile
 end
 
-function Tile.damage(tile, damage)
+function Tile.damage(tile, damage, world)
 	if tile.floored then
 		tile.health = math.max(tile.health - damage, 0)
 		
 		if tile.health == 0 then
 			Tile.deFloor(tile)
+			Tile.updateCanvas(world.map, globalGame.mainCamera)
 		end
 	end
 end
@@ -110,8 +120,20 @@ function Tile.checkDangerous(tile)
 	return false
 end
 
+function Tile.updateCanvas(map, camera)
+	love.graphics.setCanvas(tileCanvas)
+	love.graphics.clear()
+	
+	local xRange = {camera.x - math.ceil(0.5*camera.canvasDims[1]/camera.tileDims[1]), camera.x + math.ceil(0.5*camera.canvasDims[1]/camera.tileDims[1])}
+	local yRange = {camera.y - math.ceil(0.5*camera.canvasDims[2]/camera.tileDims[2]), camera.y + math.ceil(0.5*camera.canvasDims[2]/camera.tileDims[2])}
+	
+	Map.iterateOverTileRange(map, xRange, yRange, function(tile)
+		Tile.draw(tile, camera)
+	end)
+	love.graphics.setCanvas()
+end
+
 function Tile.draw(tile, camera)
-	local gc = GlobalClock
 	if (tile.visible or tile.remembered) then
 		if tile.floored then
 			local tileImage = Image.getImage("tiles/floor")
@@ -123,14 +145,24 @@ function Tile.draw(tile, camera)
 				cColour[3] = 0.1*cColour[3]
 			end
 			
-			Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-				love.graphics.setColor(cColour)
-				love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-				--love.graphics.setColor({0.1, 0.1, 0.1, colour[4]})
-				--love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-			end)
+			love.graphics.setColor(cColour)
+			local drawX = tileCanvas:getWidth()/2 + camera.tileDims[1]*(tile.x - 1)
+			local drawY = tileCanvas:getHeight()/2 + camera.tileDims[2]*(tile.y - 1)
+			love.graphics.rectangle("fill", drawX, drawY, GlobalTileDims[1], GlobalTileDims[2])
 		end
-		
+	else
+		if tile.floored then
+			local drawX = tileCanvas:getWidth()/2 + camera.tileDims[1]*(tile.x - 1)
+			local drawY = tileCanvas:getHeight()/2 + camera.tileDims[2]*(tile.y - 1)
+			love.graphics.setColor(0, 0, 0, 1)
+			love.graphics.rectangle("fill", drawX, drawY, GlobalTileDims[1], GlobalTileDims[2])
+		end
+	end
+end
+
+function Tile.drawOverlays(tile, camera)
+	local gc = GlobalClock
+	if (tile.visible or tile.remembered) then
 		if tile.trailColour[4] > 0 then
 			local dt = gc - tile.lastTrailUpdate
 			tile.trailColour[4] = math.max(tile.trailColour[4] - dt, 0)
@@ -141,14 +173,22 @@ function Tile.draw(tile, camera)
 			end)
 		end
 		tile.lastTrailUpdate = gc
-	else
-		if tile.floored then
-			Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-				love.graphics.setColor(0, 0, 0, 1)
-				love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
-			end)
-		end
 	end
+end
+
+function Tile.drawCanvas(map, camera)
+	love.graphics.setColor(1, 1, 1, 1)
+	Camera.drawTo(camera, map.minCoords[1] + segmentSize + 0.5, map.minCoords[2] + segmentSize + 0.5, 
+	function(drawX, drawY)
+		love.graphics.draw(tileCanvas, Misc.round(drawX), Misc.round(drawY))
+	end)
+	
+	--local xOff = math.max(love.graphics.getWidth() - 1000, 0)/2
+	--local yOff = math.max(love.graphics.getHeight() - 1000, 0)/2
+	--
+	--local drawX, drawY = Camera.getDrawCoords(map.minCoords[1] + segmentSize + 0.5, map.minCoords[2] + segmentSize + 0.5, camera)
+	--love.graphics.setColor(1, 1, 1, 1)
+	--love.graphics.draw(tileCanvas, Misc.round(drawX + xOff), Misc.round(drawY + yOff))
 end
 
 return Tile

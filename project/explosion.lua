@@ -65,7 +65,7 @@ function Explosion.updateExplosions(explosions, dt)
 	while i > 0 do
 		local explosion = explosions[i]
 		if explosion.body.tile.floored then
-			Tile.damage(explosion.body.tile, 20*explosion.body.health*dt)
+			Tile.damage(explosion.body.tile, 20*explosion.body.health*dt, explosion.body.world)
 		end
 		
 		TileColour.update(explosion.tileColour, dt)

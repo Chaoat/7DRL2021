@@ -72,7 +72,8 @@ end
 
 function Interface.drawPlayerControls(x, y, width)
 	local controlText = ""
-	controlText = controlText .. "keypad/qwe-asd-zxc : move" .. "\n"
+	controlText = controlText .. "keypad/qwe-asd-z c : move" .. "\n"
+	controlText = controlText .. "kp5/space : wait" .. "\n"
 	controlText = controlText .. "    1-0 : prepare weapon" .. "\n"
 	controlText = controlText .. "        i : examine" .. "\n"
 	controlText = controlText .. "lshift + 1-0 : chain fire" .. "\n"

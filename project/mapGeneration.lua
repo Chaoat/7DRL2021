@@ -224,7 +224,10 @@ local function getInternalBoundsFromNode(node, segmentSize, map)
 	return {x = {map.minCoords[1] + node.x*segmentSize + 1, map.minCoords[1] + (node.x + 1)*segmentSize - 1}, y = {map.minCoords[2] + node.y*segmentSize + 1, map.minCoords[2] + (node.y + 1)*segmentSize - 1}}
 end
 
-local function spreadDanger(centerNode, mapStructure, danger)
+local function spreadDanger(centerNode, mapStructure, danger, dropOff)
+	if not dropOff then
+		dropOff = 1
+	end
 	local function key(node)
 		return node.x .. ":" .. node.y
 	end	
@@ -266,9 +269,9 @@ local function spreadDanger(centerNode, mapStructure, danger)
 	
 	while #checking > 0 do
 		local nextNode = checking[1][1]
-		local newDanger = checking[1][2] - 1
+		local newDanger = checking[1][2] - dropOff
 		if danger < 0 then
-			newDanger = checking[1][2] + 1
+			newDanger = checking[1][2] + dropOff
 		end
 		
 		nextNode.danger = math.max(nextNode.danger + checking[1][2], 0)
@@ -335,6 +338,8 @@ function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world
 	world.map = map
 	mapStructure.segmentSize = segmentSize
 	
+	Tile.initTileCanvas(GlobalTileDims[1]*segmentSize*mapStructure.width, GlobalTileDims[2]*segmentSize*mapStructure.height, segmentSize)
+	
 	local function placeWall(x1, y1, x2, y2)
 		for i = x1, x2 do
 			for j = y1, y2 do
@@ -392,10 +397,10 @@ function MapGeneration.generateMapFromStructure(mapStructure, segmentSize, world
 	MapGeneration.placeEndOrbs(mapStructure, world)
 	spreadDanger(mapStructure.nodes[math.floor(mapStructure.width/2)][math.floor(mapStructure.height/2)], mapStructure, 6)
 	
-	spreadDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, -6)
-	spreadDanger(mapStructure.nodes[1][math.floor(mapStructure.height/2)], mapStructure, -6)
-	spreadDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][1], mapStructure, -6)
-	spreadDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][mapStructure.height - 2], mapStructure, -6)
+	spreadDanger(mapStructure.nodes[mapStructure.width - 2][math.floor(mapStructure.height/2)], mapStructure, -10, 2)
+	spreadDanger(mapStructure.nodes[1][math.floor(mapStructure.height/2)], mapStructure, -10, 2)
+	spreadDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][1], mapStructure, -10, 2)
+	spreadDanger(mapStructure.nodes[math.floor(mapStructure.height/2)][mapStructure.height - 2], mapStructure, -10, 2)
 end
 
 function MapGeneration.populateChests(mapStructure, world)

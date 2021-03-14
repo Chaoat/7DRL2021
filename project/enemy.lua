@@ -99,7 +99,7 @@ do --initEnemies
 		
 		newEnemyKind("Harpy", 
 		function(x, y, world)
-			local enemy = Enemy.new("Harpy", x, y, Character.new(Body.new(x, y, world, 20, 0.4, 0, "character"), 30, Image.letterToImage("w", {0, 0.8, 0, 1}), "Harpy", flavourText), aiFunc)
+			local enemy = Enemy.new("Harpy", x, y, Character.new(Body.new(x, y, world, 20, 0.4, 0, "character"), 30, Image.letterToImage("w", {0.1, 0.5, 0.6, 1}), "Harpy", flavourText), aiFunc)
 			enemy.character.flying = true
 			enemy.character.body.bloody = true
 			enemy.reloading = 0
@@ -173,7 +173,7 @@ do --initEnemies
 	
 	do --Saturation Turret
 		local name = "Saturation Turret"
-		local flavourText = "Your ancestors knew that no matter the strength of their chains, they would never be able to bind The Devourer completely. Although his body is secured, his mind wanders, and twists everything it touches. With this in mind, they constructed the Labyrinth with as mundane materials as they could produce, in hopes they could not be turned to evil. Despite this, The Devourer still managed to twist his prison to his liking, and these turrets are but the first of his designs.\n\nFast firing but inaccurate, try not to stand in their kill zone for too long, lest they land a lucky hit. Other than that, their immobility allows you to dispose of them how and when you desire."
+		local flavourText = "Your ancestors knew that no matter the strength of their chains, they would never be able to bind The Devourer completely. Although his body is secured, his mind wanders, and twists everything it touches. With this in mind, they constructed the Labyrinth with as mundane materials as they could produce, in hopes they could not be turned to evil. Despite this, The Devourer still managed to twist his prison to his liking, and these turrets are but the first of his designs.\n\nFast firing but inaccurate, try not to stand in their kill zone for too long, lest they land a lucky hit. Other than that, their immobility allows you to dispose of them how and when you desire. Fortunately they also have a limited ammo supply, and have to reload every ten rounds. Use this to your advantage."
 		
 		local function aiFunc(enemy, player, turnSystem)
 			enemy.firing = false
@@ -183,17 +183,23 @@ do --initEnemies
 				local character = enemy.character
 				
 				
-				--if body.tile.visible then
+				if enemy.ammoLeft > 0 then
 					enemy.firing = true
 					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("ChainGun", playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
-				--end
+				end
+				enemy.ammoLeft = enemy.ammoLeft - 1
+				
+				if enemy.ammoLeft <= -5 then
+					enemy.ammoLeft = 10
+				end
 			end
 		end
 		
 		newEnemyKind(name, 
 		function(x, y, world)
-			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 50, 4, 0, "character"), 0, Image.letterToImage("T", {0.7, 0.7, 0, 1}), name, flavourText), aiFunc)
+			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 40, 4, 0, "character"), 0, Image.letterToImage("T", {0.7, 0.7, 0, 1}), name, flavourText), aiFunc)
 			--Body.anchor(enemy.character.body)
+			enemy.ammoLeft = 10
 			enemy.character.body.friction = 3
 			enemy.character.body.sparky = true
 		end)
@@ -201,7 +207,7 @@ do --initEnemies
 
 	do --Missile Battery
 		local name = "Missile Battery"
-		local flavourText = "Somehow the twisted mass of metal ahead of you manufactures and launches smart rockets capable of tracking your every movement. It is quite the complicated piece of machinery, and if you did not have to obliterate it, the top engineers down planet side would have loved to examine it. Luckily for you, the intricacy of its design should make it easy to disable.\n\nIf left unanswered, the volume of rockets vomited by this foe will easily overwhelm you. Either destroy it with prejudice, or stay out of its sight until you can."
+		local flavourText = "Somehow the twisted mass of metal ahead of you manufactures and launches smart rockets capable of tracking your every movement. It is quite the complicated piece of machinery, and if you did not have to obliterate it, the top engineers down planet side would have loved to examine it. Luckily for you, the intricacy of its design should make it easy to disable.\n\nIf left unanswered, the volume of rockets vomited by this foe will easily overwhelm you. Either destroy it with prejudice, or stay out of its sight until you can. Like its brother the Saturation Turret, it also must reload every 10 rounds."
 		
 		local function aiFunc(enemy, player, turnSystem)
 			enemy.firing = false
@@ -214,9 +220,15 @@ do --initEnemies
 				local angleToPlayer = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
 				local randAngle = angleToPlayer + Random.randomBetweenPoints(-math.pi/4, math.pi/4)
 				
-				if enemy.reloading <= 0 then
+				if enemy.ammoLeft <= 0 then
+					enemy.ammoLeft = enemy.ammoLeft - 1
+					enemy.ammoLeft = 10
+				end
+				
+				if enemy.reloading <= 0 and enemy.ammoLeft == 0 then
 					enemy.firing = true
 					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Battery Missile", body.x + math.cos(randAngle), body.y + math.sin(randAngle), body, body.world), body, 0, turnSystem)
+					enemy.ammoLeft = enemy.ammoLeft - 1
 				end
 			end
 		end
@@ -227,6 +239,7 @@ do --initEnemies
 			--Body.anchor(enemy.character.body)
 			enemy.character.body.friction = 3
 			enemy.reloading = 0
+			enemy.ammoLeft = 10
 			enemy.character.body.sparky = true
 		end)
 	end

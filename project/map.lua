@@ -80,7 +80,7 @@ function Map.drawTiles(map, camera)
 	local xRange = {camera.x - math.ceil(0.5*camera.canvasDims[1]/camera.tileDims[1]), camera.x + math.ceil(0.5*camera.canvasDims[1]/camera.tileDims[1])}
 	local yRange = {camera.y - math.ceil(0.5*camera.canvasDims[2]/camera.tileDims[2]), camera.y + math.ceil(0.5*camera.canvasDims[2]/camera.tileDims[2])}
 	Map.iterateOverTileRange(map, xRange, yRange, function(tile)
-		Tile.draw(tile, camera)
+		Tile.drawOverlays(tile, camera)
 	end)
 end
 

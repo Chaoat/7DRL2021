@@ -11,6 +11,7 @@ function World.new(mapRadius, segmentSize)
 end
 
 function World.draw(world, drawTrackers, camera)
+	Tile.drawCanvas(world.map, camera)
 	Map.drawTiles(world.map, camera)
 	Wall.drawWalls(world.walls, camera)
 	Particle.drawAll(world.particles, camera)

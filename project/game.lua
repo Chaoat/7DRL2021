@@ -1,8 +1,5 @@
 local Game = {}
 
-GlobalTurnTime = 0.2
-GlobalTileDims = {16, 16}
-
 local currentLevel = 1
 local levelStartTexts = {}
 do --initTexts
@@ -11,7 +8,12 @@ do --initTexts
 	levelStartTexts[3] = {"III", "The last stage awaits, deep within The Labyrinth the last Shackle frays. You were chosen from birth for this mission, child of the first Runner, brought up on tales of their bravery. The Devourer knows too that this is his final chance, his dreams have grown in strength, and the allies that stand beside him are truly terrifying. Raids on the inner worlds by terrible demons are now a common occurrence, providing but a taste of the horror that awaits if you fail in your mission."}
 end
 
+local shipAmbience = Sound.newSound("shipAmbience.ogg", 0.4)
+shipAmbience:setLooping(true)
+
+local playerAngles
 function Game.new()
+	playerAngles = {0, math.pi/2, math.pi, -math.pi/2}
 	currentLevel = 1
 	
 	local mapRadius = 9
@@ -20,16 +22,22 @@ function Game.new()
 	
 	Game.spawnPlayer(game)
 	
+	Game.resize(game, love.graphics.getWidth(), love.graphics.getHeight())
+	
 	InfoScreen.displayInfoScreen(levelStartTexts[currentLevel][1], levelStartTexts[currentLevel][2])
+	
+	shipAmbience:seek(0)
+	shipAmbience:play()
+	
 	
 	return game
 end
 
-local playerAngles = {0, math.pi/2, math.pi, -math.pi/2}
+
 local startingKits = {}
-startingKits[1] = {{"Bolt Caster", 30}, {"Force Wave", 6}}
-startingKits[2] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Emergency Thruster", 4}}
-startingKits[3] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Emergency Thruster", 4}, {"Entropy Orb", 10}, {"Sanctuary Sphere", 3}}
+startingKits[1] = {{"Bolt Caster", 45}, {"Force Wave", 6}}
+startingKits[2] = {{"Bolt Caster", 45}, {"Force Wave", 18}, {"Emergency Thruster", 4}}
+startingKits[3] = {{"Bolt Caster", 45}, {"Force Wave", 18}, {"Emergency Thruster", 4}, {"Entropy Orb", 10}, {"Sanctuary Sphere", 3}}
 function Game.spawnPlayer(game)
 	local side = math.floor(Random.randomBetweenPoints(0, 4))
 	local angle, angleI = Random.randomFromList(playerAngles)
@@ -38,9 +46,11 @@ function Game.spawnPlayer(game)
 	local spawnX = Misc.round(54*math.cos(angle))
 	local spawnY = Misc.round(54*math.sin(angle))
 	
-	game.player = Player.new(spawnX, spawnY, game.world, startingKits[currentLevel])
+	game.mainCamera.x = spawnX
+	game.mainCamera.y = spawnY
+	
+	game.player = Player.new(spawnX, spawnY, game.world, startingKits[currentLevel], game)
 	game.mainCamera.followingBody = game.player.character.body
-	Camera.update(game.mainCamera, game.examining, 0)
 end
 
 function Game.update(game, dt)

@@ -1,7 +1,9 @@
+GlobalTurnTime = 0.2
+GlobalTileDims = {16, 16}
+
 Body = require("body")
 PhysicsSystem = require("physicsSystem")
 World = require("world")
-Game = require("game")
 Camera = require("camera")
 CanvasCache = require("canvasCache")
 Map = require("map")
@@ -30,13 +32,15 @@ Chest = require("chest")
 InfoScreen = require("infoScreen")
 ScreenTransitions = require("screenTransitions")
 Stars = require("stars")
-Sounds = require("sounds")
+Sound = require("sounds")
 Particle = require("particle")
 
 Shield = require("shield")
 EndOrb = require("endOrb")
 Wall = require("wall")
 Enemy = require("enemy")
+
+Game = require("game")
 
 local profile = require("profile")
 

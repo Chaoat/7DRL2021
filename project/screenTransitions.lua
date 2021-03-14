@@ -70,7 +70,7 @@ function ScreenTransitions.die()
 	local transition
 	local timer = 0
 	local red = 1
-	local fIText = fadeInText(Font.getFont("437", 16), "It is over, your body destroyed and your soul departed, your struggle ended. Far away on all the known worlds, a collective moan of despair is heard, there is no time to train another to send up. Over the coming months the factories of your people begin retrofitting for mass arms production, and the young are drafted en masse into military academies. With war approaching, all your people can do is prepare.\n\nPress R to rewind the clock", 2, 10, {1, 1, 1, 1}, 300, "center")
+	local fIText = fadeInText(Font.getFont("437", 16), "It is over, your body destroyed and your soul departed, your struggle ended.\n\nPress R to rewind the clock", 2, 5, {1, 1, 1, 1}, 300, "center")
 	
 	local drawFunc = function()
 		local colour = Misc.blendColours({0, 0, 0, 0.2}, {0.6, 0.1, 0.05, 0.8}, red)

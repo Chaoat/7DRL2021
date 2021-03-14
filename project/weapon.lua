@@ -96,7 +96,7 @@ do --initialize player weapons
 		function(targetX, targetY, firingBody, world)
 			local x = firingBody.x
 			local y = firingBody.y
-			Explosion.ring(x, y, 4, 1, 1, 20, 1, world)
+			Explosion.ring(x, y, 4, 1, 0.7, 20, 1, world)
 		end, 
 		{0.7, 0.7, 1, 1}, nil)
 		
