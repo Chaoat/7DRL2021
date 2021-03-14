@@ -2,7 +2,7 @@ local Body = {}
 
 local ID = 0
 function Body.newRaw(health, mass, bounce, layer)
-	local body = {x = nil, y = nil, health = health, maxHealth = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 5, parent = nil}
+	local body = {x = nil, y = nil, health = health, maxHealth = health, mass = mass, bounce = bounce, speed = 0, angle = 0, tile = nil, map = nil, world = nil, inDanger = 0, layer = layer, ID = ID, moveCallBacks = {}, speedThreshold = 10, speedPerHealth = 5, parent = nil}
 	ID = ID + 1
 	return body
 end
@@ -14,7 +14,6 @@ end
 
 function Body.setInvincible(body)
 	body.invincible = true
-	body.health = 9999
 end
 
 function Body.setTracking(body, targetBody, force, targetSpeed)

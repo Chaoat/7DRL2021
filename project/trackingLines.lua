@@ -24,7 +24,9 @@ end
 
 function TrackingLines.new(x, y, targetX, targetY, bodyTemplate, simulationTime, colour, world)
 	local line = {points = nil, simulationTime = simulationTime, bodyTemplate = bodyTemplate, body = nil, colour = colour, world = world}
-	TrackingLines.updatePoints(line, x, y, targetX, targetY)
+	if bodyTemplate then
+		TrackingLines.updatePoints(line, x, y, targetX, targetY)
+	end
 	table.insert(world.trackingLines, line)
 	return line
 end
@@ -59,6 +61,13 @@ function TrackingLines.updatePoints(line, newX, newY, targetX, targetY)
 		end
 	end
 	
+	return line
+end
+
+function TrackingLines.newSinglePointTracker(targetX, targetY, colour, body)
+	local line = TrackingLines.new(0, 0, targetX, targetY, nil, GlobalTurnTime, colour, body.world)
+	line.body = body
+	TrackingLines.singlePoint(line, {targetX, targetY})
 	return line
 end
 

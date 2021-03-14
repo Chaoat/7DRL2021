@@ -6,13 +6,15 @@ GlobalTileDims = {16, 16}
 local currentLevel = 1
 local levelStartTexts = {}
 do --initTexts
-	levelStartTexts[1] = {"I", "placeholder"}
-	levelStartTexts[2] = {"II", "placeholder"}
-	levelStartTexts[3] = {"III", "placeholder"}
+	levelStartTexts[1] = {"I", "The Devourer came over a Millenium ago, laying his yoke on all within your system and forcing all into servitude. After a century long war, your ancestors defeated him, breaking free of their chains and tasting freedom for the first time in generations. The Devourer was not destroyed however, too great was his power, but a Labyrinth orbiting the star of your system was constructed to house his sleeping spirit. Those bound within time however can not permanently chain the timeless, and your ancestors knew that shackles forged by mortal hands would need mortal upkeep. They foresaw that their chains would last 1000 years, after which three mortals would be required to venture into the Labyrinth and renew them over the course of a century.\n\nIt is 1000 years later, and The Devourer has been dreaming. The need for renewal is becoming apparent, as The Devourer's slumber wanes, evil forces have been growing in strength throughout the system. You have been selected to take part in the first stage of the renewal, and the future of your people goes with you."}
+	levelStartTexts[2] = {"II", "It has been 33 years, and the time approaches for the second stage of the renewal. The first Runner never returned, their lifeless body found within the Labyrinth by the techs sent to replace the old arnaments in the Cargo Pods. Despite this, it is clear that they succeeded, as the evil forces within the system have diminished somewhat, and the Labyrinth once again slumbered. Now it is awake once again, and it is your turn to venture within."}
+	levelStartTexts[3] = {"III", "The last stage awaits, deep within The Labyrinth the last Shackle frays. You were chosen from birth for this mission, child of the first Runner, brought up on tales of their bravery. The Devourer knows too that this is his final chance, his dreams have grown in strength, and the allies that stand beside him are truly terrifying. Raids on the inner worlds by terrible demons are now a common occurrence, providing but a taste of the horror that awaits if you fail in your mission."}
 end
 
 function Game.new()
-	local mapRadius = 7
+	currentLevel = 1
+	
+	local mapRadius = 9
 	local segmentSize = 6
 	local game = {world = World.new(mapRadius, segmentSize), turnSystem = TurnCalculation.newSystem(GlobalTurnTime), mainCamera = Camera.new(800, 450, GlobalTileDims[1], GlobalTileDims[2]), examining = false, transition = {over = true}}
 	
@@ -26,15 +28,15 @@ end
 local playerAngles = {0, math.pi/2, math.pi, -math.pi/2}
 local startingKits = {}
 startingKits[1] = {{"Bolt Caster", 30}, {"Force Wave", 6}}
-startingKits[2] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Hydrocarbon Explosive", 6}}
-startingKits[3] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Hydrocarbon Explosive", 6}}
+startingKits[2] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Emergency Thruster", 4}}
+startingKits[3] = {{"Bolt Caster", 30}, {"Force Wave", 18}, {"Emergency Thruster", 4}, {"Entropy Orb", 10}, {"Sanctuary Sphere", 3}}
 function Game.spawnPlayer(game)
 	local side = math.floor(Random.randomBetweenPoints(0, 4))
 	local angle, angleI = Random.randomFromList(playerAngles)
 	table.remove(playerAngles, angleI)
 	
-	local spawnX = Misc.round(44*math.cos(angle))
-	local spawnY = Misc.round(44*math.sin(angle))
+	local spawnX = Misc.round(54*math.cos(angle))
+	local spawnY = Misc.round(54*math.sin(angle))
 	
 	game.player = Player.new(spawnX, spawnY, game.world, startingKits[currentLevel])
 	game.mainCamera.followingBody = game.player.character.body
@@ -65,9 +67,16 @@ function Game.nextLevel(game)
 		
 		Character.clearCharacters(game.world.characters, game.world.enemies)
 		Character.clearCharacters(game.world.characters, {game.player})
+		Weapon.clearDeadly(game.world.bullets, game.world.map)
+		Weapon.clearDeadly(game.world.explosions, game.world.map)
 		
 		game.world.enemies = {}
-		MapGeneration.multiplyThreat(game.world.map.structure, 2)
+		if currentLevel == 1 then
+			MapGeneration.multiplyThreat(game.world.map.structure, 2)
+		else
+			MapGeneration.multiplyThreat(game.world.map.structure, 1.5)
+		end
+		
 		MapGeneration.populateEnemies(game.world.map.structure, game.world)
 		
 		Vision.fullResetVision(game.world.map)

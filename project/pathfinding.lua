@@ -43,7 +43,7 @@ local function expandPathfindingMap(pathfindingMap, xOff, yOff)
 end
 
 local function newPathTile()
-	local tile = {targetTile = false, child = false, alreadyChecked = false}
+	local tile = {targetTile = false, child = false, alreadyChecked = false, unreachable = false}
 	return tile
 end
 
@@ -63,26 +63,37 @@ function Pathfinding.newPathfindingMap(map)
 end
 
 function Pathfinding.findPath(pathfindingMap, startingCoords, endingCoords, endDistance)
+	local checked = {}
+	
 	local toCheck = {}
 	local function newNode(x, y, parent)
 		if x >= pathfindingMap.map.minCoords[1] and x <= pathfindingMap.map.maxCoords[1] and y >= pathfindingMap.map.minCoords[2] and y <= pathfindingMap.map.maxCoords[2] then
 			local pTile = pathfindingMap.tiles[x][y]
 			if not pTile.alreadyChecked then
+				if pTile.unreachable == GlobalTurnNumber then
+					return true
+				end
+				
 				local xOff = Misc.round(x - endingCoords[1])
 				local yOff = Misc.round(y - endingCoords[2])
 				expandPathfindingMap(pathfindingMap, xOff, yOff)
 				
 				local node = {x = x, y = y, parent = parent, negDist = -pathfindingMap.distHeuristic[xOff][yOff].dist}
+				table.insert(checked, node)
 				pTile.alreadyChecked = true
 				Misc.binaryInsert(toCheck, node, "negDist")
 				
 				if pTile.targetTile and pTile.targetTile[1] == endingCoords[1] and pTile.targetTile[2] == endingCoords[2] and not Tile.checkBlocking(Map.getTile(pathfindingMap.map, pTile.child[1], pTile.child[2]), "character") then
-					newNode(pTile.child[1], pTile.child[2], node)
+					return newNode(pTile.child[1], pTile.child[2], node)
 				end
 			end
 		end
 	end
-	newNode(startingCoords[1], startingCoords[2], nil)
+	
+	if newNode(startingCoords[1], startingCoords[2], nil) then
+		print("blocked")
+		return false
+	end
 	
 	local pathFound = false
 	local function addToPath(checking, child)
@@ -99,6 +110,16 @@ function Pathfinding.findPath(pathfindingMap, startingCoords, endingCoords, endD
 		table.insert(pathFound, {checking.x, checking.y})
 	end
 	
+	local function undoChecked()
+		for i = 1, #checked do
+			local undo = checked[i]
+			pathfindingMap.tiles[undo.x][undo.y].alreadyChecked = false
+			if not pathFound then
+				pathfindingMap.tiles[undo.x][undo.y].unreachable = GlobalTurnNumber
+			end
+		end
+	end
+	
 	while not pathFound and #toCheck > 0 do
 		local checking = toCheck[#toCheck]
 		table.remove(toCheck, #toCheck)
@@ -112,18 +133,18 @@ function Pathfinding.findPath(pathfindingMap, startingCoords, endingCoords, endD
 					local x = checking.x + i
 					local y = checking.y + j
 					if not Tile.checkBlocking(Map.getTile(pathfindingMap.map, x, y), "pathfinder") then
-						newNode(x, y, checking)
+						if newNode(x, y, checking) then
+							undoChecked()
+							print("blocked")
+							return false
+						end
 					end
 				end
 			end
 		end
 	end
 	
-	for i = pathfindingMap.map.minCoords[1], pathfindingMap.map.maxCoords[1] do
-		for j = pathfindingMap.map.minCoords[2], pathfindingMap.map.maxCoords[2] do
-			pathfindingMap.tiles[i][j].alreadyChecked = false
-		end
-	end
+	undoChecked()
 	
 	return pathFound
 end

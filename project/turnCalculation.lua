@@ -1,6 +1,9 @@
 local TurnCalculation = {}
 
+GlobalTurnNumber = 0
+
 function TurnCalculation.newSystem(turnDuration)
+	GlobalTurnNumber = 0
 	local turnSystem = {turnDuration = turnDuration, weaponDischarges = {}, turnLeft = 0, stepSize = 0, turnRunning = false}
 	return turnSystem
 end
@@ -26,6 +29,7 @@ end
 function TurnCalculation.runTurn(turnSystem, world)
 	print("--new turn--")
 	if not turnSystem.turnRunning then
+		GlobalTurnNumber = GlobalTurnNumber + 1
 		calculateStepSize(turnSystem, world)
 		
 		turnSystem.turnRunning = true
@@ -96,11 +100,12 @@ function TurnCalculation.endTurn(game)
 	Chest.updateChests(world.chests, player)
 	EndOrb.updateOrbs(world.endOrbs, player)
 	
-	Enemy.decideActions(world.enemies, player, turnSystem)
-	
 	Character.updateCharacterTrackingLines(world.characters)
 	Weapon.updateBulletTrajectories(world.bullets)
 	Explosion.updateTrajectories(world.explosions)
+	
+	Enemy.decideActions(world.enemies, player, turnSystem)
+	
 	Player.endTurnUpdate(player)
 	turnSystem.turnRunning = false
 end

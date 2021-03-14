@@ -35,14 +35,16 @@ function Player.new(x, y, world, startingKit)
 		Player.getWeapon(player, startingKit[i][1], startingKit[i][2])
 	end
 	
-	--Player.getWeapon(player, "Bolt Caster", 30)
-	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
-	--Player.getWeapon(player, "Force Wave", 10)
-	--Player.getWeapon(player, "Matter Compressor", 30)
-	--Player.getWeapon(player, "Emergency Thruster", 30)
-	--Player.getWeapon(player, "Entropy Orb", 30)
+	Player.getWeapon(player, "Bolt Caster", 30)
+	Player.getWeapon(player, "Hydrocarbon Explosive", 10)
+	Player.getWeapon(player, "Force Wave", 10)
+	Player.getWeapon(player, "Matter Compressor", 30)
+	Player.getWeapon(player, "Emergency Thruster", 30)
+	Player.getWeapon(player, "Entropy Orb", 30)
+	Player.getWeapon(player, "Sanctuary Sphere", 30)
+	Player.getWeapon(player, "Annihilator Cannon", 30)
 	
-	--Enemy.spawnEnemy("Psiclops", x - 2, y, world)
+	--Enemy.spawnEnemy("Golem", x - 2, y, world)
 	
 	return player
 end
@@ -174,6 +176,10 @@ local function playerSelectWeapon(player, index)
 		end
 		
 		local body = player.character.body
+		if player.weapons[index].name == "Sanctuary Sphere" then
+			player.targettingCoords = {body.x, body.y}
+		end
+		
 		if player.targettingCoords then
 			player.targettingLine = Weapon.simulateFire(player.weapons[index].name, body.x, body.y, player.targettingCoords[1], player.targettingCoords[2], body.world)
 		end
@@ -188,7 +194,8 @@ local function playerSelectWeapon(player, index)
 end
 
 function Player.endTurnUpdate(player)
-	if player.character.body.destroy and not player.dead and globalGame.transition.over then
+	local distFromCenter = math.sqrt(player.character.body.x^2 + player.character.body.y^2)
+	if (player.character.body.destroy or distFromCenter >= 75) and not player.dead and globalGame.transition.over then
 		player.dead = true
 		globalGame.transition = ScreenTransitions.die()
 	end
