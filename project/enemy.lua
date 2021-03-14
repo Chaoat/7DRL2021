@@ -238,7 +238,7 @@ do --initEnemies
 		
 		newEnemyKind(name, 
 		function(x, y, world)
-			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 40, 3, 0, "character"), 0, Image.letterToImage("M", {0.6, 0.6, 0.4, 1}), name, flavourText), aiFunc)
+			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 40, 6, 0, "character"), 0, Image.letterToImage("M", {0.6, 0.6, 0.4, 1}), name, flavourText), aiFunc)
 			--Body.anchor(enemy.character.body)
 			enemy.character.body.friction = 3
 			enemy.reloading = 0
@@ -669,7 +669,7 @@ function Enemy.warnEnemy(enemy, amount)
 		enemy.warned = math.min(enemy.warned + amount, warnLimit)
 		if enemy.warned >= warnLimit then
 			enemy.alerted = true
-			Enemy.shout(enemy.character.body, 4, 3)
+			Enemy.shout(enemy.character.body, 2, 3)
 		end
 	end
 end

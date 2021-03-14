@@ -96,6 +96,7 @@ function Game.nextLevel(game)
 		Game.spawnPlayer(game)
 		InfoScreen.displayInfoScreen(levelStartTexts[currentLevel][1], levelStartTexts[currentLevel][2])
 		
+		Camera.update(game.mainCamera, false, game.world, 0)
 		Tile.updateCanvas(game.world.map, game.mainCamera)
 	end
 end
@@ -183,6 +184,7 @@ function Game.handleKeyboardInput(game, key)
 	
 	if game.player.dead then
 		if Controls.checkControl(key, "restart") then
+			Weapon.clearDeadly(globalGame.world.bullets, globalGame.world.map)
 			globalGame = Game.new()
 		end
 	else

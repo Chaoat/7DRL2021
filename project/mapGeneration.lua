@@ -427,7 +427,7 @@ function MapGeneration.populateChests(mapStructure, world)
 					local spawnBounds = getInternalBoundsFromNode(node, mapStructure.segmentSize, world.map)
 					
 					Chest.new(Misc.round(Random.randomBetweenPoints(spawnBounds.x[1], spawnBounds.x[2])), Misc.round(Random.randomBetweenPoints(spawnBounds.y[1], spawnBounds.y[2])), world)
-					spreadDanger(node, mapStructure, 4)
+					spreadDanger(node, mapStructure, 3, 1)
 				end
 			end
 		end
@@ -483,7 +483,7 @@ do --initEnemyParties
 	newEnemyEntry(1, "Harpy")
 	newEnemyEntry(2, "Gremlin")
 	newEnemyEntry(3, "Saturation Turret")
-	newEnemyEntry(6, "Missile Battery")
+	newEnemyEntry(7, "Missile Battery")
 	newEnemyEntry(5, "Leaper")
 	newEnemyEntry(8, "Psiclops")
 	newEnemyEntry(9, "Caretaker")
@@ -497,7 +497,7 @@ function MapGeneration.populateEnemies(mapStructure, world)
 		for j = 1, mapStructure.height do
 			local node = mapStructure.nodes[i][j]
 			if node and node.danger > 0 then
-				local dangerLeft = node.danger
+				local dangerLeft = math.ceil(node.danger)
 				local spawnList = {}
 				while dangerLeft > 0 do
 					local chosenDanger

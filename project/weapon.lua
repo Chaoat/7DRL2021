@@ -140,6 +140,7 @@ do --initialize player weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, 10, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.4, 0.4, 0.4, 1}), 20, {0, 0, 0, 0.8}, function(bullet)
 				Explosion.ring(bullet.x, bullet.y, 4, 5, 3, -30, 1, world)
+				Sound.singlePlaySound("implosion.ogg", 0.3, x, y)
 			end, Sound.loopPlayerSound("jetpackloop.ogg", 0.2, x, y))
 			Sound.singlePlaySound("mediumexplosion.wav", 0.1, x, y)
 			local dist = math.sqrt((targetY - y)^2 + (targetX - x)^2)
@@ -402,10 +403,10 @@ do --initialize enemy weapons
 	end
 	
 	do --Eye Blast
-		local bulletSpeed = 1000
+		local bulletSpeed = 600
 		local damage = 20
-		local mass = 0.01
-		local minSpeed = 900
+		local mass = 0.03
+		local minSpeed = 0
 		local simulationBody = Body.newRaw(damage, mass, 0, "bullet")
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = minSpeed
@@ -462,6 +463,12 @@ function Weapon.clearDeadly(deadlies, map)
 		local deadly = deadlies[i]
 		if not deadly.permanent then
 			local body = deadly.body
+			
+			if deadly.loopSound then
+				deadly.loopSound[1]:stop()
+				deadly.loopSound[1]:release()
+			end
+			
 			body.destroy = true
 			Map.addTileToCleanQueue(body.map, body.tile, body.layer)
 			deadly.trackingLine.destroy = true
