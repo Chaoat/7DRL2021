@@ -16,6 +16,13 @@ function Body.setInvincible(body)
 	body.invincible = true
 end
 
+function Body.setBounceSound(body, soundName, volume, minDamage)
+	if not minDamage then
+		minDamage = 0
+	end
+	body.bounceSound = {Sound.newSound(soundName, volume), volume, minDamage}
+end
+
 function Body.setTracking(body, targetBody, force, targetSpeed)
 	body.tracking = {targetBody = targetBody, force = force, targetSpeed = targetSpeed}
 end
@@ -110,8 +117,18 @@ function Body.destroy(body)
 end
 
 function Body.damage(body, damage, angle)
+	if not body.simulation and body.bounceSound and damage >= body.bounceSound[3] then
+		Sound.updateVolume(body.bounceSound, body.x, body.y)
+		body.bounceSound[1]:seek(0)
+		body.bounceSound[1]:play()
+		
+		if body.player then
+			globalGame.transition = ScreenTransitions.redFlash()
+		end
+	end
+	
 	if not body.invincible then
-		if damage > 5 and not body.simulation then
+		if damage > 5 and not body.simulation then			
 			if body.bloody then
 				Particle.bloodBurst(body.x, body.y, angle, damage, body.world)
 			elseif body.sparky then

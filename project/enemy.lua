@@ -131,6 +131,7 @@ do --initEnemies
 								if enemy.reloading == 0 then
 									enemy.firing = true
 									enemy.weaponDischarge = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Junk Rocket", playerBody.x, playerBody.y, body, body.world), body, 0.6, turnSystem)
+									Sound.singlePlaySound("Shotgun-Reload.wav", 0.4, body.x, body.y)
 									enemy.targetX = playerBody.x
 									enemy.targetY = playerBody.y
 									enemy.targettingLine = Weapon.simulateFire("Junk Rocket", body.x, body.y, playerBody.x, playerBody.y, body.world)
@@ -222,10 +223,12 @@ do --initEnemies
 				
 				if enemy.ammoLeft <= 0 then
 					enemy.ammoLeft = enemy.ammoLeft - 1
-					enemy.ammoLeft = 10
+					if enemy.ammoLeft <= -6 then
+						enemy.ammoLeft = 10
+					end
 				end
 				
-				if enemy.reloading <= 0 and enemy.ammoLeft == 0 then
+				if enemy.reloading <= 0 and enemy.ammoLeft > 0 then
 					enemy.firing = true
 					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Battery Missile", body.x + math.cos(randAngle), body.y + math.sin(randAngle), body, body.world), body, 0, turnSystem)
 					enemy.ammoLeft = enemy.ammoLeft - 1
@@ -283,6 +286,7 @@ do --initEnemies
 			
 			enemy.character.body.destroyFunction = function(body)
 				Explosion.colouredExplosion(body.x, body.y, 5, 1.5, 15, 200, world, {0.95, 0.8, 1, 0.7}, {0.4, 0.2, 0.55, 0.3})
+				Sound.singlePlaySound("mediumexplosion.wav", 1, x, y)
 			end
 			enemy.character.body.friction = 5
 			enemy.character.body.bloody = true
@@ -319,6 +323,7 @@ do --initEnemies
 									enemy.weaponDischarge = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Power Ball", playerBody.x, playerBody.y, body, body.world), body, 0.8, turnSystem)
 									enemy.targettingLine = Weapon.simulateFire("Power Ball", body.x, body.y, playerBody.x, playerBody.y, body.world)
 									enemy.targettingLine.creatorBody = body
+									Sound.singlePlaySound("laserchargeup.wav", 0.7, body.x, body.y)
 								end
 							end
 						else
@@ -543,6 +548,7 @@ do --initEnemies
 			enemy.character.body.sparky = true
 			enemy.character.body.destroyFunction = function(body)
 				Explosion.ring(body.x, body.y, 1, 2, 0.5, 10, 0, world)
+				Sound.singlePlaySound("energywave.wav", 0.2, body.x, body.y)
 				if not body.tile.floored then
 					Tile.reFloor(body.tile, 100)
 				else
@@ -553,7 +559,7 @@ do --initEnemies
 			return enemy
 		end)
 	end
-
+	
 	do --Wiyht
 		local name = "Wiyht"
 		local flavourText = "These beings were supposedly wiped out during the War of Chains, living on only in the nightmares of children. There have always been rumours though that they survived, lurking in the deep darkness of the furthest reaches of the system. Many are the drunken ramblings of old pilots venturing out too far and witnessing the ancient horrors that dwell on the furthest asteroids. Most of these can be explained by madness bred from isolation in the infinite darkness of space, however it seems that they held a grain of truth, for how else could these allies of The Devourer have survived through the last millennium.\n\nWiyhts are incredible powerful psionics, sharing a portion of The Devourer's reality shaping powers. Whenever they are in range, they will violently morph nearby walls into powerful Golems, that though slow, pack a punch with their heavy fists. Don't bother too much with the Golems, they will eat your ammunition like a black hole, but the Wiyhts are priority number one targets."
@@ -612,7 +618,7 @@ do --initEnemies
 			enemy.character.body.bloody = true
 		end)
 	end
-
+	
 	do --Golem
 		local name = "Golem"
 		local flavourText = "A hulking mass of metal animated by a Wiyht. Very slow, but be careful of its deadly fists when it does get close."

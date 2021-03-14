@@ -46,7 +46,7 @@ function TurnCalculation.updateTurn(game, dt)
 	local turnSystem = game.turnSystem
 	
 	if turnSystem.turnRunning then
-		if turnSystem.stepSize > 0.05 and #turnSystem.weaponDischarges == 0 then
+		if turnSystem.stepSize > 0.05 and #turnSystem.weaponDischarges == 0 and not game.player.dead then
 			dt = turnSystem.stepSize
 		end
 		dt = math.min(turnSystem.turnLeft, dt)

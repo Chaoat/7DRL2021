@@ -13,6 +13,8 @@ function Shield.new(x, y, radius, world)
 		
 		local shield = {body = body, tileColour = TileColour.new({0, 1, 1, 1}, {0, 1, 1, 1}, nil)}
 		
+		Body.setBounceSound(shield.body, "Shield.ogg", 0.3, 0)
+		
 		table.insert(world.shields, shield)
 	end
 end

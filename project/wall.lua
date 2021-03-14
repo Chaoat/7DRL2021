@@ -48,6 +48,7 @@ function Wall.new(world, x, y)
 	local wall = {body = Body.new(x, y, world, 200, 40, 0.4, "wall"), neighbours = {false, false, false, false}}
 	wall.body.parent = wall
 	wall.body.sparky = true
+	Body.setBounceSound(wall.body, "metal_impact.wav", 0.5, 20)
 	
 	local function onMove(oldTile)
 		resetNeighbours(wall)
@@ -57,7 +58,7 @@ function Wall.new(world, x, y)
 	Body.addMoveCallback(wall.body, onMove)
 	
 	findNeighbours(wall)
-	wall.body.friction = 12
+	wall.body.friction = 13
 	table.insert(world.walls, wall)
 	return wall
 end

@@ -12,6 +12,10 @@ function Player.new(x, y, world, startingKit, game)
 	local character = Character.new(Body.new(x, y, world, 200, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}), "The Runner", "Selected through a year long competition between all the people of your generation, the champion chosen not just by their skill in bolt and wave, but by their quick wit and determined attitude. Many of your peers shared a mastery of all these skills, however you alone had the dedication and courage necessary to guard yourself from the psychic emanations of The Devourer. The final test awaits.")
 	local player = {character = character, viewRange = 15, enemyTargets = {}, enemyTargetI = 0, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
 	
+	character.body.player = true
+	
+	Body.setBounceSound(character.body, "playerhurt.wav", 1, 5)
+	
 	character.body.bloody = true
 	
 	local function onMove(oldTile)
@@ -40,16 +44,16 @@ function Player.new(x, y, world, startingKit, game)
 		Player.getWeapon(player, startingKit[i][1], startingKit[i][2])
 	end
 	
-	Player.getWeapon(player, "Bolt Caster", 30)
-	Player.getWeapon(player, "Hydrocarbon Explosive", 10)
-	Player.getWeapon(player, "Force Wave", 10)
-	Player.getWeapon(player, "Matter Compressor", 30)
-	Player.getWeapon(player, "Emergency Thruster", 30)
-	Player.getWeapon(player, "Entropy Orb", 30)
-	Player.getWeapon(player, "Sanctuary Sphere", 30)
-	Player.getWeapon(player, "Annihilator Cannon", 30)
+	--Player.getWeapon(player, "Bolt Caster", 30)
+	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
+	--Player.getWeapon(player, "Force Wave", 10)
+	--Player.getWeapon(player, "Matter Compressor", 30)
+	--Player.getWeapon(player, "Emergency Thruster", 30)
+	--Player.getWeapon(player, "Entropy Orb", 30)
+	--Player.getWeapon(player, "Sanctuary Sphere", 30)
+	--Player.getWeapon(player, "Annihilator Cannon", 30)
 	
-	--Enemy.spawnEnemy("Golem", x - 2, y, world)
+	--Enemy.spawnEnemy("Psiclops", x - 2, y, world)
 	
 	return player
 end

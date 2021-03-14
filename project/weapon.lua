@@ -1,6 +1,6 @@
 local Weapon = {}
 
-local function newDeadly(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction, layer)
+local function newDeadly(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction, layer, loopSound)
 	local xOff, yOff = Misc.angleToOffset(angle, 1)
 	--print(x + xOff .. " : " .. y + yOff .. " : " .. angle/math.pi)
 	local tile = Map.getTile(world.map, x + xOff, y + yOff)
@@ -12,7 +12,7 @@ local function newDeadly(x, y, health, mass, bounce, world, speed, angle, image,
 	local body = Body.new(x + xOff, y + yOff, world, health, mass, bounce, layer)
 	body.speedPerHealth = 1
 	body.speedThreshold = 0
-	local bullet = {body = body, image = image, trailColour = trailColour}
+	local bullet = {body = body, image = image, trailColour = trailColour, loopSound = loopSound}
 	Body.impartForce(body, speed*mass, angle)
 	body.minSpeed = minSpeed
 	
@@ -28,8 +28,8 @@ local function newDeadly(x, y, health, mass, bounce, world, speed, angle, image,
 	return bullet
 end
 
-local function newBullet(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction)
-	return newDeadly(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction, "bullet")
+local function newBullet(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction, loopSound)
+	return newDeadly(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction, "bullet", loopSound)
 end
 
 local function newBomb(x, y, health, mass, bounce, world, speed, angle, image, minSpeed, trailColour, destroyFunction)
@@ -86,6 +86,7 @@ do --initialize player weapons
 				Explosion.explode(bullet.x, bullet.y, 2, 0.4, 20, 70, world)
 				Sound.singlePlaySound("SmallExplosion.mp3", 0.1, bullet.x, bullet.y)
 			end)
+			Sound.singlePlaySound("HeavyLaserShot.wav", 0.1, x, y)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
 		
@@ -98,6 +99,7 @@ do --initialize player weapons
 			local x = firingBody.x
 			local y = firingBody.y
 			Explosion.ring(x, y, 4, 1, 0.7, 20, 1, world)
+			Sound.singlePlaySound("energywave.wav", 0.4, x, y)
 		end, 
 		{0.7, 0.7, 1, 1}, nil)
 		
@@ -115,7 +117,9 @@ do --initialize player weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			newBomb(x, y, 10, 1, 0, world, 0, angle, Image.letterToImage("O", {0.8, 0, 0, 1}), 0, {0.4, 0, 0, 0.4}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 10, 2, 30, 1000, world)
+				Sound.singlePlaySound("bigexplosion.wav", 0.8, x, y)
 			end)
+			Sound.singlePlaySound("barrel.ogg", 0.4, x, y)
 		end, 
 		{0.8, 0, 0, 1}, simulationBody)
 		
@@ -136,7 +140,8 @@ do --initialize player weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, 10, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.4, 0.4, 0.4, 1}), 20, {0, 0, 0, 0.8}, function(bullet)
 				Explosion.ring(bullet.x, bullet.y, 4, 5, 3, -30, 1, world)
-			end)
+			end, Sound.loopPlayerSound("jetpackloop.ogg", 0.2, x, y))
+			Sound.singlePlaySound("mediumexplosion.wav", 0.1, x, y)
 			local dist = math.sqrt((targetY - y)^2 + (targetX - x)^2)
 			bullet.body.duration = (dist - 2)/bulletSpeed
 		end, 
@@ -166,6 +171,7 @@ do --initialize player weapons
 				local bullet = newBullet(x, y, bulletDamage, 0.1, 0, world, Random.randomBetweenPoints(bulletSpeed/2, bulletSpeed), a, Image.letterToImage("~", {1, 0.5, 0, 1}), minSpeed, {1, 0.5, 0, 0.4})
 				bullet.body.friction = friction
 			end)
+			Sound.singlePlaySound("shotgun.wav", 0.5, x, y)
 		end, 
 		{1, 0.6, 0.1, 1}, simulationBody)
 		
@@ -189,7 +195,8 @@ do --initialize player weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, bulletDamage, bulletMass, bounce, world, bulletSpeed, angle, Image.letterToImage("o", {0.8, 0, 0.8, 1}), minSpeed, {0.8, 0, 0.8, 0.6})
 			bullet.body.speedPerHealth = bulletSpeed/100
-			Sound.singlePlaySound("plasmagun_medium.wav", 0.4, x, y)
+			Body.setBounceSound(bullet.body, "energybounce.wav", 0.1)
+			Sound.singlePlaySound("energybounce.wav", 0.4, x, y)
 		end, 
 		{0.8, 0, 0.8, 1}, simulationBody)
 		
@@ -211,7 +218,9 @@ do --initialize player weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, 10, 0.5, 2, world, bulletSpeed, angle, Image.letterToImage("+", {0, 1, 1, 1}), 0, {0, 1, 1, 0.5}, function(bullet)
 				Shield.new(bullet.x, bullet.y, 3, world)
+				Sound.singlePlaySound("plasmagun_medium.wav", 0.2, x, y)
 			end)
+			Sound.singlePlaySound("whoosh.wav", 0.3, x, y)
 			local dist = math.sqrt((targetY - y)^2 + (targetX - x)^2)
 			bullet.body.duration = math.max((dist - 2)/bulletSpeed, 0)
 			bullet.body.speedThreshold = 100
@@ -293,7 +302,8 @@ do --initialize enemy weapons
 			newBullet(x, y, 20, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.5, 0.5, 0.5, 1}), minSpeed, {0.7, 0.3, 0, 0.6}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 4, 1.5, 15, 200, world)
 				Sound.singlePlaySound("mediumexplosion2.wav", 0.4, bullet.x, bullet.y)
-			end)
+			end, Sound.loopPlayerSound("jetpackloop.ogg", 0.4, x, y))
+			Sound.singlePlaySound("mediumexplosion.wav", 0.2, x, y)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
 	end
@@ -313,8 +323,9 @@ do --initialize enemy weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage("=", {0.5, 0.5, 0, 1}), minSpeed, {0.7, 0, 0, 0.3}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 1, 1, 15, 70, world)
-			end)
-			
+				Sound.singlePlaySound("mediumexplosion2.wav", 0.3, bullet.x, bullet.y)
+			end, Sound.loopPlayerSound("jetpackloop.ogg", 0.2, x, y))
+			Sound.singlePlaySound("missile.wav", 0.3, x, y)
 			bullet.body.duration = 3
 			bullet.body.speedThreshold = 5
 			Body.setTracking(bullet.body, globalGame.player.character.body, 10, 30)
@@ -336,6 +347,7 @@ do --initialize enemy weapons
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			Body.impartForce(firingBody, bulletSpeed*firingBody.mass, angle)
+			Sound.singlePlaySound("heavyFootstep.ogg", 0.6, x, y)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
 	end
@@ -355,7 +367,9 @@ do --initialize enemy weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage("O", {1, 0, 1, 1}), minSpeed, {1, 0, 1, 0.7}, function(bullet)
 				Explosion.colouredExplosion(bullet.x, bullet.y, 8, 5, 40, 500, world, {1, 0.5, 1, 0.7}, {1, 0, 1, 0.3})
-			end)
+				Sound.singlePlaySound("EnergyExplosion.wav", 0.3, x, y)
+			end, Sound.loopPlayerSound("psiPass.ogg", 0.6, x, y))
+			Sound.singlePlaySound("psiBlast.ogg", 0.6, x, y)
 			bullet.body.speedPerHealth = 0.01
 		end, 
 		{0, 1, 0, 1}, simulationBody)
@@ -370,6 +384,7 @@ do --initialize enemy weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			Body.impartForce(firingBody, 40, angle + math.pi)
 			Explosion.targettedBlast(x, y, 6, angle, math.pi/4, 0.5, 20, 10, world)
+			Sound.singlePlaySound("flap.ogg", 0.5, x, y)
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -380,8 +395,10 @@ do --initialize enemy weapons
 			local x = firingBody.x
 			local y = firingBody.y
 			Explosion.ring(x, y, 2, 1, 0.05, 40, 0, world)
+			Sound.singlePlaySound("flap.ogg", 0.2, x, y)
 		end, 
 		{0.7, 0.7, 1, 1}, nil)
+		
 	end
 	
 	do --Eye Blast
@@ -398,6 +415,7 @@ do --initialize enemy weapons
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 0, 0, 1}), minSpeed, {1, 0.8, 0.8, 1})
+			Sound.singlePlaySound("eyeblast.ogg", 0.3, x, y)
 		end, 
 		{0.7, 0.7, 1, 1}, simulationBody)
 	end
@@ -407,6 +425,7 @@ do --initialize enemy weapons
 		function(targetX, targetY, firingBody, world)
 			local enemy = Enemy.spawnEnemy("Careling", targetX, targetY, world)
 			Enemy.warnEnemy(enemy, 9)
+			Sound.singlePlaySound("turretdeath1.wav", 0.2, targetX, targetY)
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -418,6 +437,7 @@ do --initialize enemy weapons
 			--Explosion.colouredExplosion(targetX, targetY, 2, 1, 40, 10, world, {0.9, 0.9, 1, 0.8}, {0.4, 0.4, 0.5, 0.4})
 			local enemy = Enemy.spawnEnemy("Golem", targetX, targetY, world)
 			Enemy.warnEnemy(enemy, 9)
+			Sound.singlePlaySound("transform.ogg", 1, targetX, targetY)
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -430,6 +450,7 @@ do --initialize enemy weapons
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			Explosion.targettedBlast(x, y, 4, angle, math.pi/6, 0.4, 10, 15, world)
+			Sound.singlePlaySound("heavyFootstep.ogg", 0.8, targetX, targetY)
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -486,7 +507,15 @@ function Weapon.updateBullets(bullets, dt)
 		
 		local distFromCenter = math.sqrt(bullet.body.x^2 + bullet.body.y^2)
 		
+		if bullet.loopSound then
+			Sound.updateVolume(bullet.loopSound, bullet.body.x, bullet.body.y)
+		end
+		
 		if bullet.body.destroy or distFromCenter >= 75 then
+			if bullet.loopSound then
+				bullet.loopSound[1]:stop()
+				bullet.loopSound[1]:release()
+			end
 			Body.destroy(bullet.body)
 			bullet.trackingLine.destroy = true
 			table.remove(bullets, i)

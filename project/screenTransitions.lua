@@ -91,6 +91,30 @@ function ScreenTransitions.die()
 	return transition
 end
 
+function ScreenTransitions.redFlash()
+	local transition
+	local timer = 0
+	local red = 1
+	
+	local drawFunc = function()
+		local colour = Misc.blendColours({0, 0, 0, 0.2}, {0.6, 0.1, 0.05, 0.4}, red)
+		love.graphics.setColor(colour)
+		love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+	end
+	
+	local updateFunc = function(dt)
+		timer = timer + dt
+		
+		red = math.max(5*(0.2 - timer), 0)
+		if timer > 0.2 then
+			transition.over = true
+		end
+	end
+	
+	transition = {drawFunc = drawFunc, updateFunc = updateFunc}
+	return transition
+end
+
 function ScreenTransitions.win()
 	local transition
 	local timer = 0
