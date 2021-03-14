@@ -99,7 +99,6 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		local totalHealth = 0
 		local totalDamage = 0
 		local averageBounce = body.bounce
-		local invincibleCollider = false
 		for i = 1, #colliders do
 			local collider = colliders[i]
 			totalEnergy, totalAngle = Vector.addVectors(totalEnergy, totalAngle, collider.speed*collider.mass, collider.angle)
@@ -107,7 +106,6 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 			totalMass = totalMass + collider.mass
 			totalHealth = totalHealth + collider.health
 			totalDamage = totalDamage + math.max(collider.speed - collider.speedThreshold, 0)/collider.speedPerHealth
-			invincibleCollider = invincibleCollider or collider.invincible
 		end
 		averageBounce = math.min(averageBounce/(#colliders + 1), 1)
 		
@@ -119,14 +117,10 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		local bodyDamage = math.min(math.max(bodyEnergyInAngle/body.mass - body.speedThreshold, 0)/body.speedPerHealth, body.health)
 		
 		if totalDamage > body.health then
-			if not body.invincible then
-				totalEnergyInAngle = totalEnergyInAngle*(body.health/totalDamage)
-			end
+			totalEnergyInAngle = totalEnergyInAngle*(body.health/totalDamage)
 			totalDamage = body.health
 		elseif bodyDamage > totalHealth then
-			if not invincibleCollider then
-				bodyEnergyInAngle = bodyEnergyInAngle*(totalHealth/bodyDamage)
-			end
+			bodyEnergyInAngle = bodyEnergyInAngle*(totalHealth/bodyDamage)
 			bodyDamage = totalHealth
 		end
 		
@@ -136,14 +130,10 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 				local ratio = collider.mass/totalMass
 				--collider.speed = collider.speed - (bodyEnergyInAngle/collider.mass)*ratio
 				--collider.angle = flipAngleOverIncident(collider.angle, incident)
-				Body.damage(collider, bodyDamage*ratio)
-				Body.damage(collider, totalDamage*ratio)
 				Body.impartForce(collider, (1 + averageBounce)*collider.mass*math.max(PhysicsSystem.findVectorInAngle(collider.speed, collider.angle, incident), 0), incident + math.pi)
 				Body.impartForce(collider, (1 - averageBounce)*ratio*bodyEnergyInAngle, body.angle)
-			end
-		elseif body.layer == "bullet" or body.layer == "bomb" then
-			for i = 1, #colliders do
-				colliders[i].inDanger = GlobalTurnNumber
+				Body.damage(collider, bodyDamage*ratio)
+				Body.damage(collider, totalDamage*ratio)
 			end
 		end
 		
@@ -152,10 +142,10 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		--body.speed = body.speed*averageBounce
 		--body.angle = flipAngleOverIncident(body.angle + math.pi, incident)
 		--print(incident/math.pi .. " : " .. bodyEnergyInAngle .. " : " .. body.layer)
-		Body.damage(body, totalDamage)
-		Body.damage(body, bodyDamage)
 		Body.impartForce(body, (1 + averageBounce)*bodyEnergyInAngle, incident)
 		Body.impartForce(body, (1 - averageBounce)*totalEnergyInAngle, totalAngle)
+		Body.damage(body, totalDamage)
+		Body.damage(body, bodyDamage)
 		
 		return true
 	end

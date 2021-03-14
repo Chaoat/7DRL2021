@@ -6,18 +6,13 @@ function TileColour.new(colour1, colour2, duration)
 end
 
 function TileColour.update(tileColour, dt)
-	if tileColour.timeLeft then
-		tileColour.timeLeft = math.max(tileColour.timeLeft - dt, 0)
-	end
+	tileColour.timeLeft = math.max(tileColour.timeLeft - dt, 0)
 end
 
 function TileColour.draw(tileColour, tile, camera)
 	if tile.visible then
 		Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-			local ratio = 1
-			if tileColour.timeLeft then
-				ratio = tileColour.timeLeft/tileColour.duration
-			end
+			local ratio = tileColour.timeLeft/tileColour.duration
 			local colour = Misc.blendColours(tileColour.colour2, tileColour.colour1, ratio)
 			love.graphics.setColor(colour)
 			love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])

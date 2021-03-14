@@ -18,19 +18,8 @@ local function updateFadeInText(fIText, timer)
 	end
 end
 local function drawFadeInText(x, y, fIText)
-	if fIText.text:getWidth() > 0 and fIText.text:getHeight() > 0 then
-		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.draw(fIText.text, x - fIText.wrapLimit/2, y)
-		love.graphics.setShader(Shader.glow)
-		Shader.glow:send("glowSize", 1)
-		Shader.glow:send("innerColour", {0, 0, 0, 1})
-		Shader.glow:send("outerColour", {0, 0, 0, 1})
-		Shader.glow:send("borderColour", {0, 0, 0, 1})
-		Shader.glow:send("borderSize", 1)
-		Shader.glow:send("imageDimensions", {fIText.text:getWidth(), fIText.text:getHeight()})
-		love.graphics.draw(fIText.text, x - fIText.wrapLimit/2, y)
-		love.graphics.setShader()
-	end
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(fIText.text, x - fIText.wrapLimit/2, y)
 end
 local function fadeInText(font, str, startPoint, duration, colour, wrapLimit, alignmode)
 	local text = love.graphics.newText(font, nil)
@@ -70,7 +59,7 @@ function ScreenTransitions.die()
 	local transition
 	local timer = 0
 	local red = 1
-	local fIText = fadeInText(Font.getFont("437", 16), "It is over, your body destroyed and your soul departed, your struggle ended. Far away on all the known worlds, a collective moan of despair is heard, there is no time to train another to send up. Over the coming months the factories of your people begin retrofitting for mass arms production, and the young are drafted en masse into military academies. With war approaching, all your people can do is prepare.\n\nPress R to rewind the clock", 2, 10, {1, 1, 1, 1}, 300, "center")
+	local fIText = fadeInText(Font.getFont("437", 16), "testststststststststystyststst", 2, 4, {1, 1, 1, 1}, 300, "center")
 	
 	local drawFunc = function()
 		local colour = Misc.blendColours({0, 0, 0, 0.2}, {0.6, 0.1, 0.05, 0.8}, red)
@@ -95,7 +84,7 @@ function ScreenTransitions.win()
 	local transition
 	local timer = 0
 	local red = 1
-	local fIText = fadeInText(Font.getFont("437", 16), "As your soul leaves your body, consumed by the shackle to renew itself, you experience for a moment a complete awareness of the Labyrinth and that contained within. It is as if you and the structure are becoming one, and gradually you become aware of beings surrounding you. The closest are clearly the previous runners, you recognise their faces, immortalised by the greatest artists of your people, but there are more further down the chain. In the distance you can just make out the smudged blurs of the original creators, outlined against a colossal shape towering over the Labyrinth, dwarfing even the sun with its size. A smile touches your lips as you realise who this must be, for a look of rage covers his enormous face, and his mouth is open in a silent frustrated scream.\n\nYour people are safe for another millenium.", 2, 15, {1, 1, 1, 1}, 500, "center")
+	local fIText = fadeInText(Font.getFont("437", 16), "testststststststststystyststst", 2, 4, {1, 1, 1, 1}, 300, "center")
 	
 	local drawFunc = function()
 		local colour = Misc.blendColours({0, 0, 0, 0.2}, {1, 1, 1, 0.8}, red)

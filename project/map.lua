@@ -70,9 +70,7 @@ function Map.getTile(map, x, y)
 		end
 		return map.tileMap[tX][tY]
 	else
-		local fakeTile = Tile.new(x, y, 0, map)
-		fakeTile.visible = true
-		return fakeTile
+		return Tile.new(x, y, 0, map)
 	end
 end
 

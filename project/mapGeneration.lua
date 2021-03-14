@@ -107,22 +107,9 @@ function MapGeneration.generateMapStructure(radius)
 		
 		isolatedArea(mapStructure, centerSanctum[1], centerSanctum[2], centerSanctum[3], centerSanctum[4], 3)
 		
-		pathLength = math.huge
 		local path = MapGeneration.distanceBetween(mapStructure, {2*radius + 1, radius + 1}, centerCoords)
 		if path then
-			pathLength = math.min(#path, pathLength)
-		end
-		path = MapGeneration.distanceBetween(mapStructure, {radius + 1, 2*radius + 1}, centerCoords)
-		if path then
-			pathLength = math.min(#path, pathLength)
-		end
-		path = MapGeneration.distanceBetween(mapStructure, {radius + 1, 1}, centerCoords)
-		if path then
-			pathLength = math.min(#path, pathLength)
-		end
-		path = MapGeneration.distanceBetween(mapStructure, {1, radius + 1}, centerCoords)
-		if path then
-			pathLength = math.min(#path, pathLength)
+			pathLength = #path
 		end
 		
 		if pathLength >= requiredLength then
@@ -481,10 +468,8 @@ do --initEnemyParties
 	newEnemyEntry(6, "Missile Battery")
 	newEnemyEntry(5, "Leaper")
 	newEnemyEntry(8, "Psiclops")
-	newEnemyEntry(9, "Caretaker")
 	newEnemyEntry(10, "Wyvern")
 	newEnemyEntry(12, "Eye of Madness")
-	newEnemyEntry(14, "Wiyht")
 end
 
 function MapGeneration.populateEnemies(mapStructure, world)

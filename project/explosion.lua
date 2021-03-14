@@ -49,17 +49,6 @@ function Explosion.targettedBlast(x, y, radius, angle, width, mass, speed, damag
 	end
 end
 
-function Explosion.targettedExplosion(x, y, radius, angle, width, mass, speed, damage, world)
-	local nParticles = 3*math.ceil(radius*width)
-	local partDamage = damage/nParticles
-	for i = 1, nParticles do
-		local angle = angle + width*(-0.5 + i/nParticles)
-		local rX = x
-		local rY = y
-		newParticle(rX, rY, radius, angle, partDamage, mass, speed, {1, 1, 0.8, 1}, {1, 0.5, 0.1, 0.7}, 1, world)
-	end
-end
-
 function Explosion.updateExplosions(explosions, dt)
 	local i = #explosions
 	while i > 0 do
@@ -82,11 +71,9 @@ end
 function Explosion.updateTrajectories(explosions)
 	for i = 1, #explosions do
 		local explosion = explosions[i]
-		if explosion.trackingLine then
-			TrackingLines.changeSpeed(explosion.trackingLine, explosion.body.speed)
-			local xOff, yOff = Misc.angleToOffset(explosion.body.angle, 1)
-			TrackingLines.updatePoints(explosion.trackingLine, explosion.body.x, explosion.body.y, explosion.body.x + xOff, explosion.body.y + yOff)
-		end
+		TrackingLines.changeSpeed(explosion.trackingLine, explosion.body.speed)
+		local xOff, yOff = Misc.angleToOffset(explosion.body.angle, 1)
+		TrackingLines.updatePoints(explosion.trackingLine, explosion.body.x, explosion.body.y, explosion.body.x + xOff, explosion.body.y + yOff)
 	end
 end
 

@@ -12,18 +12,16 @@ end
 
 local function dodge(enemy, speed)
 	local body = enemy.character.body
-	local dodgeNeeded = body.inDanger == GlobalTurnNumber
-	--print(body.inDanger .. ":" .. GlobalTurnNumber)
+	local dodgeNeeded = Tile.checkDangerous(body.tile)
 	if dodgeNeeded then
-		local availableTiles = Vision.getTilesInVision(body.world, body.tile.x, body.tile.y, 1, function(tile)
+		local availableTiles = Vision.getTilesInVision(body.world, body.tile.x, body.tile.y, speed, function(tile)
 			return not Tile.checkDangerous(tile)
 		end)
 		
 		if #availableTiles > 0 then
-			local target, index = Random.randomFromList(availableTiles)
-			local angle = math.atan2(target.y - body.y, target.x - body.x)
-			enemy.character.targetX = body.x + speed*math.cos(angle)
-			enemy.character.targetY = body.y + speed*math.sin(angle)
+			local target = Random.randomFromList(availableTiles)
+			enemy.character.targetX = target.x
+			enemy.character.targetY = target.y
 			return true
 		end
 	end
@@ -37,7 +35,7 @@ local function pathfindAwayFromPlayer(enemy, player, speed)
 	speed = speed + 1
 	local eBody = enemy.character.body
 	local path = Pathfinding.findPath(enemy.character.body.world.pathfindingMap, {eBody.tile.x, eBody.tile.y}, {Misc.round(eBody.tile.x + speed*offX), Misc.round(eBody.tile.y + speed*offY)}, 1)
-	
+	print(path)
 	if path then
 		local targetCoords = path[math.min(speed, #path)]
 		enemy.character.targetX = targetCoords[1]
@@ -369,7 +367,7 @@ do --initEnemies
 						end
 					else
 						enemy.firing = true
-						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Wing Buffet", playerBody.x, playerBody.y, body, body.world), body, 0.1, turnSystem)
+						TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Wing Buffet", playerBody.x, playerBody.y, body, body.world), body, 0, turnSystem)
 						enemy.reloading = 3
 					end
 				else
@@ -425,209 +423,6 @@ do --initEnemies
 			--Body.anchor(enemy.character.body)
 			enemy.character.body.friction = 10
 			enemy.beams = {}
-		end)
-	end
-
-	do --Caretaker
-		local name = "Caretaker"
-		local flavourText = "After a millenium of imprisonment, it is little surprise that The Devourer has come to see his prison as his home, having known nothing else for all that time. This strange mechanical spider is evidence of that, as it carefully lays its carelings around the station to skitter off and repair the damage you've dealt to it. Despite its benign intentions however, it is still a minion of The Devourer, and will fight against you in whatever way it can.\n\nThis foe spawns an endless stream of Carelings, little creatures that charge towards you and self detonate, leaving a wall in their place. This might not seem like that much of a threat, but too many walls building up can really clog up your firing lines, and no one likes spending ammunition clearing blockages."
-		
-		local function aiFunc(enemy, player, turnSystem)
-			if enemy.alerted then
-				local body = enemy.character.body
-				local playerBody = player.character.body
-				local character = enemy.character
-				
-				enemy.reloading = math.max(enemy.reloading - 1, 0)
-				
-				local approach = false
-				local run = false
-				if not dodge(enemy, 6) then
-					if body.tile.visible then
-						local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
-						local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
-						
-						if dist < 12 then
-							run = true
-						elseif dist > 14 then
-							approach = true
-						end
-					else
-						approach = true
-					end
-					
-					if approach then
-						pathfindToPlayer(enemy, player, 1)
-					elseif run then
-						pathfindAwayFromPlayer(enemy, player, 1)
-					end
-				end
-				
-				firing = false
-				if enemy.reloading == 0 then
-					local angle = Random.randomBetweenPoints(0, 2*math.pi)
-					firing = true
-					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("SpawnScrew", body.x + math.cos(angle), body.y + math.sin(angle), body, body.world), body, 0, turnSystem)
-					enemy.reloading = 4
-				end
-			end
-		end
-		
-		newEnemyKind(name, 
-		function(x, y, world)
-			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 65, 5, 0, "character"), 500, Image.letterToImage("C", {0, 1, 1, 1}), name, flavourText), aiFunc)
-			enemy.reloading = 0
-		end)
-	end
-	
-	do --Careling
-		local name = "Careling"
-		local flavourText = "Spawn of the Caretaker, beware its forceful blast."
-		
-		local function aiFunc(enemy, player, turnSystem)
-			if enemy.alerted then
-				local body = enemy.character.body
-				local playerBody = player.character.body
-				local character = enemy.character
-				
-				enemy.reloading = math.max(enemy.reloading - 1, 0)
-				
-				local approach = true
-				local run = false
-				if not dodge(enemy, 6) then
-					if body.tile.visible then
-						local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
-						local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
-						
-						if dist <= 3 then
-							Body.destroy(body)
-						end
-					end
-					
-					if approach then
-						pathfindToPlayer(enemy, player, 1)
-					elseif run then
-						pathfindAwayFromPlayer(enemy, player, 1)
-					end
-				end
-			end
-		end
-		
-		newEnemyKind(name, 
-		function(x, y, world)
-			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 20, 0.8, 0, "character"), 80, Image.letterToImage("c", {0, 1, 1, 1}), name, flavourText), aiFunc)
-			enemy.reloading = 0
-			
-			enemy.character.body.destroyFunction = function(body)
-				Explosion.ring(body.x, body.y, 1, 2, 0.5, 10, 0, world)
-				if not body.tile.floored then
-					Tile.reFloor(body.tile, 100)
-				else
-					Wall.new(world, body.tile.x, body.tile.y)
-				end
-			end
-			
-			return enemy
-		end)
-	end
-
-	do --Wiyht
-		local name = "Wiyht"
-		local flavourText = "These beings were supposedly wiped out during the War of Chains, living on only in the nightmares of children. There have always been rumours though that they survived, lurking in the deep darkness of the furthest reaches of the system. Many are the drunken ramblings of old pilots venturing out too far and witnessing the ancient horrors that dwell on the furthest asteroids. Most of these can be explained by madness bred from isolation in the infinite darkness of space, however it seems that they held a grain of truth, for how else could these allies of The Devourer have survived through the last millennium.\n\nWiyhts are incredible powerful psionics, sharing a portion of The Devourer's reality shaping powers. Whenever they are in range, they will violently morph nearby walls into powerful Golems, that though slow, pack a punch with their heavy fists. Don't bother too much with the Golems, they will eat your ammunition like a black hole, but the Wiyhts are priority number one targets."
-		
-		local function aiFunc(enemy, player, turnSystem)
-			if enemy.alerted then
-				local body = enemy.character.body
-				local playerBody = player.character.body
-				local character = enemy.character
-				
-				enemy.reloading = math.max(enemy.reloading - 1, 0)
-				firing = false
-				
-				local approach = false
-				local run = false
-				if not dodge(enemy, 2) then
-					if enemy.reloading > 0 then
-						run = true
-					else
-						local appropriateTiles = Vision.getTilesInVision(body.world, body.x, body.y, 10, function(tile)
-						local playerDist = math.sqrt((tile.x - playerBody.x)^2 + (tile.y - playerBody.y)^2)
-						return #tile.bodies["wall"] > 0 and playerDist <= 5
-						end)
-						
-						if #appropriateTiles > 0 then
-							local tile = Random.randomFromList(appropriateTiles)
-							firing = true
-							
-							Body.destroy(tile.bodies["wall"][1])
-							TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("SpawnGolem", tile.x, tile.y, body, body.world), body, 0, turnSystem)
-							enemy.targettingLine = TrackingLines.newSinglePointTracker(tile.x, tile.y, {1, 0.7, 0.8, 1}, body)
-							enemy.targettingLine.creatorBody = body
-							enemy.reloading = 10
-						else
-							approach = true
-						end
-					end
-				end
-				
-				if not firing and enemy.targettingLine then
-					enemy.targettingLine.destroy = true
-				end
-				
-				if approach then
-					pathfindToPlayer(enemy, player, 1)
-				elseif run then
-					pathfindAwayFromPlayer(enemy, player, 1)
-				end
-			end
-		end
-		
-		newEnemyKind(name, 
-		function(x, y, world)
-			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 120, 5, 0, "character"), 80, Image.letterToImage("Y", {0.8, 0.8, 0.6, 1}), name, flavourText), aiFunc)
-			enemy.reloading = 0
-		end)
-	end
-
-	do --Golem
-		local name = "Golem"
-		local flavourText = "A hulking mass of metal animated by a Wiyht. Very slow, but be careful of its deadly fists when it does get close."
-		
-		local function aiFunc(enemy, player, turnSystem)
-			enemy.firing = false
-			enemy.parity = (enemy.parity + 1)%3
-			enemy.reloading = math.max(enemy.reloading - 1, 0)
-			
-			local body = enemy.character.body
-			local playerBody = player.character.body
-			
-			if enemy.alerted then
-				if enemy.targettingLine then
-					enemy.targettingLine.destroy = true
-				end
-				
-				local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
-				local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
-				
-				if enemy.parity == 1 then
-					pathfindToPlayer(enemy, player, 1)
-				end
-				if dist < 3 and enemy.reloading == 0 then
-					enemy.firing = true
-					TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Golem Fist", playerBody.x, playerBody.y, body, body.world), body, 0.1, turnSystem)
-					enemy.reloading = 2
-				end
-			end
-		end
-		
-		newEnemyKind(name, 
-		function(x, y, world)
-			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 180, 15, 0, "character"), 100, Image.letterToImage("G", {0.5, 0.5, 0.5, 1}), name, flavourText), aiFunc)
-			
-			enemy.character.body.friction = 10
-			enemy.parity = 0
-			enemy.reloading = 0
-			return enemy
 		end)
 	end
 end
