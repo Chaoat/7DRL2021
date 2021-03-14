@@ -84,6 +84,7 @@ do --initialize player weapons
 			Body.impartForce(firingBody, 5, angle + math.pi)
 			newBullet(x, y, 8, 0.1, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.8, 0.8, 0.8, 1}), 20, {0.8, 0.6, 0, 0.8}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 2, 0.4, 20, 70, world)
+				Sound.singlePlaySound("SmallExplosion.mp3", 0.1, bullet.x, bullet.y)
 			end)
 		end, 
 		{0, 1, 0, 1}, simulationBody)
@@ -188,6 +189,7 @@ do --initialize player weapons
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, bulletDamage, bulletMass, bounce, world, bulletSpeed, angle, Image.letterToImage("o", {0.8, 0, 0.8, 1}), minSpeed, {0.8, 0, 0.8, 0.6})
 			bullet.body.speedPerHealth = bulletSpeed/100
+			Sound.singlePlaySound("plasmagun_medium.wav", 0.4, x, y)
 		end, 
 		{0.8, 0, 0.8, 1}, simulationBody)
 		
@@ -235,8 +237,10 @@ do --initialize player weapons
 			Body.impartForce(firingBody, 35, angle + math.pi)
 			local bullet = newBullet(x, y, bulletHealth, 2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.9, 0.8, 0.6, 1}), 20, {0.9, 0.8, 0.6, 0.3}, function(bullet)
 				Explosion.targettedExplosion(bullet.x, bullet.y, 15, bullet.angle, math.pi/2, 0.5, 20, 1000, world)
+				Sound.singlePlaySound("EnergyExplosion.wav", 0.4, x, y)
 			end)
 			bullet.body.speedPerHealth = speedToHealth
+			Sound.singlePlaySound("AnnihilatorCannonShot.wav", 0.5, x, y)
 		end, 
 		{0.9, 0.8, 0.6, 1}, simulationBody)
 		
@@ -256,6 +260,7 @@ do --initialize enemy weapons
 			function(a)
 				newBullet(x, y, 8, 0.1, 0, world, bulletSpeed, a, Image.letterToImage(".", {1, 1, 0, 1}), 15, {0.8, 0.8, 0, 0.8})
 			end)
+			Sound.singlePlaySound("shotgun.wav", 0.2, x, y)
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -268,6 +273,7 @@ do --initialize enemy weapons
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x) + Random.randomBetweenPoints(-math.pi/6, math.pi/6)
 			newBullet(x, y, 12, 0.2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 1, 0, 1}), 15, {1, 1, 0, 0.1})
+			Sound.singlePlaySound("smgsingleshot.wav", 0.2, x, y)
 		end, 
 		{0, 1, 0, 1}, nil)
 	end
@@ -286,6 +292,7 @@ do --initialize enemy weapons
 			Body.impartForce(firingBody, 10, angle + math.pi)
 			newBullet(x, y, 20, 1, 0, world, bulletSpeed, angle, Image.letterToImage(">", {0.5, 0.5, 0.5, 1}), minSpeed, {0.7, 0.3, 0, 0.6}, function(bullet)
 				Explosion.explode(bullet.x, bullet.y, 4, 1.5, 15, 200, world)
+				Sound.singlePlaySound("mediumexplosion2.wav", 0.4, bullet.x, bullet.y)
 			end)
 		end, 
 		{0, 1, 0, 1}, simulationBody)

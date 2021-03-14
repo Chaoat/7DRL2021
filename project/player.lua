@@ -30,6 +30,7 @@ function Player.new(x, y, world, startingKit, game)
 		Tile.updateCanvas(world.map, game.mainCamera)
 		
 		--print(player.character.body.tile.x .. "--" .. player.character.body.tile.y)
+		Sound.setCenter(playerTile.x, playerTile.y)
 	end
 	
 	onMove()
@@ -39,14 +40,14 @@ function Player.new(x, y, world, startingKit, game)
 		Player.getWeapon(player, startingKit[i][1], startingKit[i][2])
 	end
 	
-	--Player.getWeapon(player, "Bolt Caster", 30)
-	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
-	--Player.getWeapon(player, "Force Wave", 10)
-	--Player.getWeapon(player, "Matter Compressor", 30)
-	--Player.getWeapon(player, "Emergency Thruster", 30)
-	--Player.getWeapon(player, "Entropy Orb", 30)
-	--Player.getWeapon(player, "Sanctuary Sphere", 30)
-	--Player.getWeapon(player, "Annihilator Cannon", 30)
+	Player.getWeapon(player, "Bolt Caster", 30)
+	Player.getWeapon(player, "Hydrocarbon Explosive", 10)
+	Player.getWeapon(player, "Force Wave", 10)
+	Player.getWeapon(player, "Matter Compressor", 30)
+	Player.getWeapon(player, "Emergency Thruster", 30)
+	Player.getWeapon(player, "Entropy Orb", 30)
+	Player.getWeapon(player, "Sanctuary Sphere", 30)
+	Player.getWeapon(player, "Annihilator Cannon", 30)
 	
 	--Enemy.spawnEnemy("Golem", x - 2, y, world)
 	

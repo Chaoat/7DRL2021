@@ -53,7 +53,7 @@ function Chest.new(x, y, world)
 		for i = 1, world.itemLevel do
 			rarities[i] = i
 		end
-		openChest(body.x, body.y, rarities, {2, 3}, world)
+		openChest(body.x, body.y, rarities, {2, 4}, world)
 	end
 	
 	Body.anchor(chest.character.body)
