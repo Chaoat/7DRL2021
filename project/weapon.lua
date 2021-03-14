@@ -195,7 +195,7 @@ do --initialize player weapons
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
 			local bullet = newBullet(x, y, bulletDamage, bulletMass, bounce, world, bulletSpeed, angle, Image.letterToImage("o", {0.8, 0, 0.8, 1}), minSpeed, {0.8, 0, 0.8, 0.6})
-			bullet.body.speedPerHealth = bulletSpeed/100
+			bullet.body.speedPerHealth = bulletSpeed/50
 			Body.setBounceSound(bullet.body, "energybounce.wav", 0.1)
 			Sound.singlePlaySound("energybounce.wav", 0.4, x, y)
 		end, 
@@ -366,7 +366,7 @@ do --initialize enemy weapons
 			local x = firingBody.x
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
-			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage("O", {1, 0, 1, 1}), minSpeed, {1, 0, 1, 0.7}, function(bullet)
+			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage("*", {1, 0, 1, 1}), minSpeed, {1, 0, 1, 0.7}, function(bullet)
 				Explosion.colouredExplosion(bullet.x, bullet.y, 8, 5, 40, 500, world, {1, 0.5, 1, 0.7}, {1, 0, 1, 0.3})
 				Sound.singlePlaySound("EnergyExplosion.wav", 0.3, x, y)
 			end, Sound.loopPlayerSound("psiPass.ogg", 0.6, x, y))
@@ -403,11 +403,12 @@ do --initialize enemy weapons
 	end
 	
 	do --Eye Blast
-		local bulletSpeed = 600
+		local bulletSpeed = 100
 		local damage = 20
-		local mass = 0.03
+		local mass = 0.1
 		local minSpeed = 0
 		local simulationBody = Body.newRaw(damage, mass, 0, "bullet")
+		simulationBody.speedPerHealth = 0.01
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = minSpeed
 		addWeapon("Eye Blast", 
@@ -415,7 +416,8 @@ do --initialize enemy weapons
 			local x = firingBody.x
 			local y = firingBody.y
 			local angle = math.atan2(targetY - y, targetX - x)
-			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage("-", {1, 0, 0, 1}), minSpeed, {1, 0.8, 0.8, 1})
+			local bullet = newBullet(x, y, damage, mass, 0, world, bulletSpeed, angle, Image.letterToImage(" ", {1, 0, 0, 1}), minSpeed, {1, 0.4, 0.4, 1})
+			bullet.body.speedPerHealth = 0.01
 			Sound.singlePlaySound("eyeblast.ogg", 0.3, x, y)
 		end, 
 		{0.7, 0.7, 1, 1}, simulationBody)

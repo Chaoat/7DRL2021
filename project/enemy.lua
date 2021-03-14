@@ -266,7 +266,7 @@ do --initEnemies
 				
 				local angle = math.atan2(playerBody.y - body.y, playerBody.x - body.x)
 				local dist = math.sqrt((playerBody.y - body.y)^2 + (playerBody.x - body.x)^2)
-				if dist > 5 or enemy.reloading > 0 or not body.tile.floored then
+				if dist > 8 or enemy.reloading > 0 or not body.tile.floored then
 					if enemy.parity == 1 then
 						pathfindToPlayer(enemy, player, 1)
 					end
@@ -421,7 +421,7 @@ do --initEnemies
 			local body = enemy.character.body
 			local playerBody = player.character.body
 			
-			if enemy.alerted then
+			if enemy.alerted and enemy.character.body.tile.visible then
 				enemy.firing = true
 				local beam = TurnCalculation.addWeaponDischarge(Weapon.prepareWeaponFire("Eye Blast", playerBody.x, playerBody.y, body, body.world), body, 0.6, turnSystem)
 				table.insert(enemy.beams, {beam, playerBody.x, playerBody.y})

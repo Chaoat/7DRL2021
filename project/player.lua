@@ -51,7 +51,7 @@ function Player.new(x, y, world, startingKit, game)
 	--Player.getWeapon(player, "Sanctuary Sphere", 30)
 	--Player.getWeapon(player, "Annihilator Cannon", 30)
 	
-	--Enemy.spawnEnemy("Psiclops", x - 2, y, world)
+	--Enemy.spawnEnemy("Eye of Madness", x - 2, y, world)
 	
 	return player
 end
@@ -183,7 +183,7 @@ local function playerSelectWeapon(player, index)
 		end
 		
 		local body = player.character.body
-		if player.weapons[index].name == "Sanctuary Sphere" then
+		if player.weapons[index].name == "Sanctuary Sphere" or player.weapons[index].name == "Hydrocarbon Explosive" or player.weapons[index].name == "Emergency Thruster" then
 			player.targettingCoords = {body.x, body.y}
 		end
 		
