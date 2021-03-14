@@ -68,6 +68,7 @@ function Chest.updateChests(chests, player)
 		
 		local dist = math.sqrt((chest.character.body.y - pBody.y)^2 + (chest.character.body.x - pBody.x)^2)
 		if math.floor(dist) <= 1 then
+			Sound.singlePlaySound("podOpen.ogg", 0.3, chest.character.body.x, chest.character.body.y)
 			Body.destroy(chest.character.body)
 		end
 		
