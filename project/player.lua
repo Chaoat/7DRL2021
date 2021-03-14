@@ -12,6 +12,8 @@ function Player.new(x, y, world, startingKit)
 	local character = Character.new(Body.new(x, y, world, 100, 1, 0, "character"), 200, Image.letterToImage("@", {1, 1, 1, 1}), "The Runner", "Selected through a year long competition between all the people of your generation, the champion chosen not just by their skill in bolt and wave, but by their quick wit and determined attitude. Many of your peers shared a mastery of all these skills, however you alone had the dedication and courage necessary to guard yourself from the psychic emanations of The Devourer. The final test awaits.")
 	local player = {character = character, viewRange = 15, enemyTargets = {}, enemyTargetI = 0, weapons = {}, firingWeapon = false, chainFiring = false, targettingCoords = {0, 0}, targettingLine = false, selectingTarget = false, targettingCharacter = false}
 	
+	character.body.bloody = true
+	
 	local function onMove(oldTile)
 		if oldTile then
 			Map.iterateOverTileRange(world.map, {oldTile.x - player.viewRange, oldTile.x + player.viewRange}, {oldTile.y - player.viewRange, oldTile.y + player.viewRange}, 
@@ -35,14 +37,14 @@ function Player.new(x, y, world, startingKit)
 		Player.getWeapon(player, startingKit[i][1], startingKit[i][2])
 	end
 	
-	Player.getWeapon(player, "Bolt Caster", 30)
-	Player.getWeapon(player, "Hydrocarbon Explosive", 10)
-	Player.getWeapon(player, "Force Wave", 10)
-	Player.getWeapon(player, "Matter Compressor", 30)
-	Player.getWeapon(player, "Emergency Thruster", 30)
-	Player.getWeapon(player, "Entropy Orb", 30)
-	Player.getWeapon(player, "Sanctuary Sphere", 30)
-	Player.getWeapon(player, "Annihilator Cannon", 30)
+	--Player.getWeapon(player, "Bolt Caster", 30)
+	--Player.getWeapon(player, "Hydrocarbon Explosive", 10)
+	--Player.getWeapon(player, "Force Wave", 10)
+	--Player.getWeapon(player, "Matter Compressor", 30)
+	--Player.getWeapon(player, "Emergency Thruster", 30)
+	--Player.getWeapon(player, "Entropy Orb", 30)
+	--Player.getWeapon(player, "Sanctuary Sphere", 30)
+	--Player.getWeapon(player, "Annihilator Cannon", 30)
 	
 	--Enemy.spawnEnemy("Golem", x - 2, y, world)
 	
@@ -196,6 +198,9 @@ end
 function Player.endTurnUpdate(player)
 	local distFromCenter = math.sqrt(player.character.body.x^2 + player.character.body.y^2)
 	if (player.character.body.destroy or distFromCenter >= 75) and not player.dead and globalGame.transition.over then
+		if distFromCenter >= 75 then
+			player.spaced = true
+		end
 		player.dead = true
 		globalGame.transition = ScreenTransitions.die()
 	end

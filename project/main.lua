@@ -30,6 +30,8 @@ Chest = require("chest")
 InfoScreen = require("infoScreen")
 ScreenTransitions = require("screenTransitions")
 Stars = require("stars")
+Sounds = require("sounds")
+Particle = require("particle")
 
 Shield = require("shield")
 EndOrb = require("endOrb")

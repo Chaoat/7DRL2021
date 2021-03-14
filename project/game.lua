@@ -165,22 +165,28 @@ function Game.handleKeyboardInput(game, key)
 	--	TurnCalculation.runTurn(game.turnSystem, game.world)
 	--end
 	
-	if game.transition.over then
-		if not InfoScreen.getDisplaying() then
-			if Controls.checkControl(key, "examine") then
-				if game.examining then
-					stopExamining(game)
+	if game.player.dead then
+		if Controls.checkControl(key, "restart") then
+			globalGame = Game.new()
+		end
+	else
+		if game.transition.over then
+			if not InfoScreen.getDisplaying() then
+				if Controls.checkControl(key, "examine") then
+					if game.examining then
+						stopExamining(game)
+					else
+						startExamining(game)
+					end
+				elseif game.examining then
+					examiningMoveInput(game, key)
 				else
-					startExamining(game)
+					Player.keyInput(game.turnSystem, game.player, key)
 				end
-			elseif game.examining then
-				examiningMoveInput(game, key)
 			else
-				Player.keyInput(game.turnSystem, game.player, key)
-			end
-		else
-			if Controls.checkControl(key, "return") then
-				InfoScreen.closeInfoScreen()
+				if Controls.checkControl(key, "return") then
+					InfoScreen.closeInfoScreen()
+				end
 			end
 		end
 	end

@@ -101,6 +101,7 @@ do --initEnemies
 		function(x, y, world)
 			local enemy = Enemy.new("Harpy", x, y, Character.new(Body.new(x, y, world, 20, 0.4, 0, "character"), 30, Image.letterToImage("w", {0, 0.8, 0, 1}), "Harpy", flavourText), aiFunc)
 			enemy.character.flying = true
+			enemy.character.body.bloody = true
 			enemy.reloading = 0
 		end)
 	end
@@ -165,6 +166,7 @@ do --initEnemies
 					enemy.targettingLine.destroy = true
 				end
 			end
+			enemy.character.body.bloody = true
 			enemy.reloading = 0
 		end)
 	end
@@ -193,6 +195,7 @@ do --initEnemies
 			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 50, 4, 0, "character"), 0, Image.letterToImage("T", {0.7, 0.7, 0, 1}), name, flavourText), aiFunc)
 			--Body.anchor(enemy.character.body)
 			enemy.character.body.friction = 3
+			enemy.character.body.sparky = true
 		end)
 	end
 
@@ -224,6 +227,7 @@ do --initEnemies
 			--Body.anchor(enemy.character.body)
 			enemy.character.body.friction = 3
 			enemy.reloading = 0
+			enemy.character.body.sparky = true
 		end)
 	end
 	
@@ -268,6 +272,7 @@ do --initEnemies
 				Explosion.colouredExplosion(body.x, body.y, 5, 1.5, 15, 200, world, {0.95, 0.8, 1, 0.7}, {0.4, 0.2, 0.55, 0.3})
 			end
 			enemy.character.body.friction = 5
+			enemy.character.body.bloody = true
 			enemy.parity = 0
 			enemy.reloading = 0
 		end)
@@ -341,6 +346,7 @@ do --initEnemies
 					enemy.targettingLine.destroy = true
 				end
 			end
+			enemy.character.body.bloody = true
 			enemy.reloading = 0
 		end)
 	end
@@ -384,6 +390,7 @@ do --initEnemies
 			enemy.character.flying = true
 			enemy.character.body.friction = 0
 			enemy.reloading = 0
+			enemy.character.body.bloody = true
 		end)
 	end
 
@@ -425,6 +432,7 @@ do --initEnemies
 			--Body.anchor(enemy.character.body)
 			enemy.character.body.friction = 10
 			enemy.beams = {}
+			enemy.character.body.bloody = true
 		end)
 	end
 
@@ -477,6 +485,7 @@ do --initEnemies
 		function(x, y, world)
 			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 65, 5, 0, "character"), 500, Image.letterToImage("C", {0, 1, 1, 1}), name, flavourText), aiFunc)
 			enemy.reloading = 0
+			enemy.character.body.sparky = true
 		end)
 	end
 	
@@ -518,6 +527,7 @@ do --initEnemies
 			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 20, 0.8, 0, "character"), 80, Image.letterToImage("c", {0, 1, 1, 1}), name, flavourText), aiFunc)
 			enemy.reloading = 0
 			
+			enemy.character.body.sparky = true
 			enemy.character.body.destroyFunction = function(body)
 				Explosion.ring(body.x, body.y, 1, 2, 0.5, 10, 0, world)
 				if not body.tile.floored then
@@ -586,6 +596,7 @@ do --initEnemies
 		function(x, y, world)
 			local enemy = Enemy.new(name, x, y, Character.new(Body.new(x, y, world, 120, 5, 0, "character"), 80, Image.letterToImage("Y", {0.8, 0.8, 0.6, 1}), name, flavourText), aiFunc)
 			enemy.reloading = 0
+			enemy.character.body.bloody = true
 		end)
 	end
 
@@ -627,6 +638,7 @@ do --initEnemies
 			enemy.character.body.friction = 10
 			enemy.parity = 0
 			enemy.reloading = 0
+			enemy.character.body.sparky = true
 			return enemy
 		end)
 	end
@@ -660,7 +672,7 @@ end
 function Enemy.decideActions(enemies, player, turnSystem)
 	for i = 1, #enemies do
 		local enemy = enemies[i]
-		if not enemy.character.body.destroy and enemy.aiFunction then
+		if not enemy.character.body.destroy and enemy.aiFunction and not player.spaced then
 			if not enemy.character.body.tile.visible then
 				enemy.warned = math.max(enemy.warned - 0.5, 0)
 				if enemy.warned == 0 then

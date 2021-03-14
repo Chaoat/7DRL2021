@@ -1,7 +1,10 @@
 local Tile = {}
 
 function Tile.new(x, y, health, map)
-	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false, remembered = false, floored = false, danger = {}, trailColour = {0, 0, 0, 0}, lastTrailUpdate = GlobalClock}
+	local parity = (x + y)%2
+	local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
+	
+	local tile = {x = x, y = y, map = map, health = health, bodies = {}, updatingLayers = {}, visible = false, remembered = false, floored = false, danger = {}, trailColour = {0, 0, 0, 0}, tileColour = colour, lastTrailUpdate = GlobalClock}
 	local layers = Layers.getAllLayers()
 	
 	for i = 1, #layers do
@@ -32,6 +35,9 @@ function Tile.deFloor(tile)
 end
 
 function Tile.reFloor(tile, health)
+	local parity = (tile.x + tile.y)%2
+	local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
+	tile.tileColour = colour
 	tile.health = health
 	tile.floored = true
 end
@@ -109,18 +115,16 @@ function Tile.draw(tile, camera)
 	if (tile.visible or tile.remembered) then
 		if tile.floored then
 			local tileImage = Image.getImage("tiles/floor")
-			local parity = (tile.x + tile.y)%2
-			local colour = {0.5 - 0.3*parity, 0.5 - 0.3*parity, 0.5 - 0.3*parity, 1}
+			
+			local cColour = {tile.tileColour[1], tile.tileColour[2], tile.tileColour[3], 1}
 			if not tile.visible then
-				colour[1] = 0.5*colour[1]
-				colour[2] = 0.5*colour[2]
-				colour[3] = 0.5*colour[3]
+				cColour[1] = 0.1*cColour[1]
+				cColour[2] = 0.1*cColour[2]
+				cColour[3] = 0.1*cColour[3]
 			end
 			
-			love.graphics.setLineWidth(2)
-			
 			Camera.drawTo(camera, tile.x, tile.y, function(drawX, drawY)
-				love.graphics.setColor(colour)
+				love.graphics.setColor(cColour)
 				love.graphics.rectangle("fill", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])
 				--love.graphics.setColor({0.1, 0.1, 0.1, colour[4]})
 				--love.graphics.rectangle("line", drawX - camera.tileDims[1]/2, drawY - camera.tileDims[2]/2, camera.tileDims[1], camera.tileDims[2])

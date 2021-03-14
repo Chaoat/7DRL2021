@@ -51,6 +51,7 @@ addControls("weapon10", {"0"})
 addControls("return", {"escape", "i"})
 addControls("examine", {"i"})
 addControls("cycleTargets", {"tab", "t"})
+addControls("restart", {"r"})
 
 addControls("chainFire", {"lshift"})
 

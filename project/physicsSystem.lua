@@ -136,8 +136,8 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 				local ratio = collider.mass/totalMass
 				--collider.speed = collider.speed - (bodyEnergyInAngle/collider.mass)*ratio
 				--collider.angle = flipAngleOverIncident(collider.angle, incident)
-				Body.damage(collider, bodyDamage*ratio)
-				Body.damage(collider, totalDamage*ratio)
+				Body.damage(collider, bodyDamage*ratio, body.angle)
+				Body.damage(collider, totalDamage*ratio, incident)
 				Body.impartForce(collider, (1 + averageBounce)*collider.mass*math.max(PhysicsSystem.findVectorInAngle(collider.speed, collider.angle, incident), 0), incident + math.pi)
 				Body.impartForce(collider, (1 - averageBounce)*ratio*bodyEnergyInAngle, body.angle)
 			end
@@ -152,8 +152,8 @@ function PhysicsSystem.processCollision(body, newX, newY, tile, ignoreCollisions
 		--body.speed = body.speed*averageBounce
 		--body.angle = flipAngleOverIncident(body.angle + math.pi, incident)
 		--print(incident/math.pi .. " : " .. bodyEnergyInAngle .. " : " .. body.layer)
-		Body.damage(body, totalDamage)
-		Body.damage(body, bodyDamage)
+		Body.damage(body, totalDamage, incident)
+		Body.damage(body, bodyDamage, body.angle)
 		Body.impartForce(body, (1 + averageBounce)*bodyEnergyInAngle, incident)
 		Body.impartForce(body, (1 - averageBounce)*totalEnergyInAngle, totalAngle)
 		

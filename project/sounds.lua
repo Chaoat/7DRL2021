@@ -10,7 +10,8 @@ function Sound.newSound(name)
 	return sounds[name]:clone()
 end
 
-function Sound.singlePlaySound(sound)
+function Sound.singlePlaySound(name)
+	local sound = Sound.newSound(name)
 	sound:seek(0)
 	sound:stop()
 	sound:play()

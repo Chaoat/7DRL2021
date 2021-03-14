@@ -66,6 +66,8 @@ function TurnCalculation.updateTurn(game, dt)
 			calculateStepSize(turnSystem, world)
 		end
 		
+		Particle.updateAll(world.particles, dt)
+		
 		local stepTime = dt
 		while stepTime > 0 do
 			local thisStep = math.min(stepTime, turnSystem.stepSize)

@@ -477,7 +477,10 @@ function Weapon.updateBullets(bullets, dt)
 		
 		Tile.addTrail(bullet.body.tile, bullet.trailColour)
 		
-		if bullet.body.destroy then
+		local distFromCenter = math.sqrt(bullet.body.x^2 + bullet.body.y^2)
+		
+		if bullet.body.destroy or distFromCenter >= 75 then
+			Body.destroy(bullet.body)
 			bullet.trackingLine.destroy = true
 			table.remove(bullets, i)
 		end

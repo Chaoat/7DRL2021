@@ -109,13 +109,22 @@ function Body.destroy(body)
 	end
 end
 
-function Body.damage(body, damage)
+function Body.damage(body, damage, angle)
 	if not body.invincible then
+		if damage > 5 and not body.simulation then
+			if body.bloody then
+				Particle.bloodBurst(body.x, body.y, angle, damage, body.world)
+			elseif body.sparky then
+				Particle.sparkBurst(body.x, body.y, angle, damage, body.world)
+			end
+		end
+		
 		body.health = body.health - damage
 		if body.health <= 0 then
 			body.health = 0
 			Body.destroy(body)
 		end
+		Enemy.shout(body, 1, damage)
 	end
 end
 
