@@ -32,6 +32,7 @@ addNewLayer("explosion", 	{true, 	true, 	true, 	false})
 addNewLayer("pathfinder", 	{true, 	false, 	true, 	false, 	false})
 addNewLayer("bomb", 		{true, 	true, 	true, 	true, 	false, 	true})
 addNewLayer("item", 		{true, 	false, 	false, 	false, 	false, 	false, 	false})
+addNewLayer("shield", 		{false,	true, 	false, 	true, 	false, 	true, 	false,	false})
 
 function Layers.getAllLayers()
 	return layerAddOrder

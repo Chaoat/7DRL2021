@@ -9,13 +9,16 @@ local function newItemEntry(rarity, weaponName, quantity, itemImage)
 	table.insert(itemRarities[rarity], entry)
 end
 do --initItemRarities
-	newItemEntry(1, "Bolt Caster", 15, Image.letterToImage("-", {0, 0.8, 0, 1}))
+	newItemEntry(1, "Bolt Caster", 16, Image.letterToImage("-", {0, 0.8, 0, 1}))
 	newItemEntry(1, "Force Wave", 12, Image.letterToImage("*", {0.8, 0.8, 1, 1}))
 	newItemEntry(1, "Hydrocarbon Explosive", 4, Image.letterToImage("o", {0.4, 0, 0, 1}))
 	newItemEntry(1, "Emergency Thruster", 8, Image.letterToImage("^", {1, 0.7, 0, 1}))
 	
 	newItemEntry(2, "Matter Compressor", 12, Image.letterToImage(">", {0.2, 0.2, 0.2, 1}))
-	newItemEntry(2, "Entropy Orb", 10, Image.letterToImage("Y", {0.8, 0, 0.8, 1}))
+	newItemEntry(2, "Entropy Orb", 16, Image.letterToImage("Y", {0.8, 0, 0.8, 1}))
+	newItemEntry(2, "Sanctuary Sphere", 4, Image.letterToImage("+", {0, 1, 1, 1}))
+	
+	newItemEntry(3, "Annihilator Cannon", 4, Image.letterToImage("=", {0.9, 0.8, 0.6, 1}))
 end
 
 local function newItem(x, y, itemEntry, world)

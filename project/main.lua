@@ -31,6 +31,7 @@ InfoScreen = require("infoScreen")
 ScreenTransitions = require("screenTransitions")
 Stars = require("stars")
 
+Shield = require("shield")
 EndOrb = require("endOrb")
 Wall = require("wall")
 Enemy = require("enemy")

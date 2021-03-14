@@ -73,7 +73,7 @@ end
 do --initialize player weapons
 	do --Bolt Caster
 		local bulletSpeed = 40
-		local simulationBody = Body.newRaw(20, 0.1, 0, "bullet")
+		local simulationBody = Body.newRaw(8, 0.1, 0, "bullet")
 		simulationBody.speed = bulletSpeed
 		simulationBody.minSpeed = 20
 		addWeapon("Bolt Caster", 
@@ -192,6 +192,55 @@ do --initialize player weapons
 		{0.8, 0, 0.8, 1}, simulationBody)
 		
 		addWeaponDescription("Entropy Orb", "How the weapons engineers managed to get an energy source small enough to fuel this engine of destruction, you'll never know. The only time you've ever seen one of these fired was from the deck of a fusion powered warship, and even then the lights went out on every volley. Nevertheless, this bouncy ball of death will surely tear up dream demons just as well as it tears up pirate frigates.\n\nWhen used against a single enemy, this weapon guarantees death. When used against many enemies, this weapon can make no promises, but it will likely be a slaughter. The bouncing motion of the ball can be difficult to predict, but wherever it strikes someone will fall. Just make sure that someone isn't you.")
+	end
+
+	do --Sanctuary Sphere
+		local bulletSpeed = 20
+		local simulationBody = Body.newRaw(10, 0.5, 2, "bullet")
+		simulationBody.speedThreshold = 100
+		simulationBody.speed = bulletSpeed
+		simulationBody.minSpeed = 0
+		simulationBody.preciseLanding = true
+		
+		addWeapon("Sanctuary Sphere", 
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
+			local angle = math.atan2(targetY - y, targetX - x)
+			local bullet = newBullet(x, y, 10, 0.5, 2, world, bulletSpeed, angle, Image.letterToImage("+", {0, 1, 1, 1}), 0, {0, 1, 1, 0.5}, function(bullet)
+				Shield.new(bullet.x, bullet.y, 3, world)
+			end)
+			local dist = math.sqrt((targetY - y)^2 + (targetX - x)^2)
+			bullet.body.duration = math.max((dist - 2)/bulletSpeed, 0)
+			bullet.body.speedThreshold = 100
+		end, 
+		{0, 1, 1, 1}, simulationBody)
+		
+		addWeaponDescription("Sanctuary Sphere", "A truly remarkable feat of engineering, the force projected from this device is removed from time, but not space. It's lack of temporal association makes it theoretically invulnerable, and has a side effect of reflecting any projectile striking it. This makes it perfect for use in a defensive shield, as it is capable of reflecting even explosions.\n\nA powerful defensive device, as long as you sit inside the radius, nothing from outside can harm you. The shield lasts forever, whether you consider that a positive or a negative, so be careful where you place it lest it end up protecting your enemies more than you. It can be deployed at a distance, or directly on top of you.")
+	end
+
+	do --Annihilator Cannon
+		local bulletSpeed = 80
+		local bulletHealth = 150
+		local speedToHealth = 0.5
+		local simulationBody = Body.newRaw(bulletHealth, 0.1, 0, "bullet")
+		simulationBody.speed = bulletSpeed
+		simulationBody.speedPerHealth = speedToHealth
+		simulationBody.minSpeed = 20
+		addWeapon("Annihilator Cannon", 
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
+			local angle = math.atan2(targetY - y, targetX - x)
+			Body.impartForce(firingBody, 35, angle + math.pi)
+			local bullet = newBullet(x, y, bulletHealth, 2, 0, world, bulletSpeed, angle, Image.letterToImage("-", {0.9, 0.8, 0.6, 1}), 20, {0.9, 0.8, 0.6, 0.3}, function(bullet)
+				Explosion.targettedExplosion(bullet.x, bullet.y, 15, bullet.angle, math.pi/2, 0.5, 20, 1000, world)
+			end)
+			bullet.body.speedPerHealth = speedToHealth
+		end, 
+		{0.9, 0.8, 0.6, 1}, simulationBody)
+		
+		addWeaponDescription("Annihilator Cannon", "During the War of Chains, a need was found for a weapon capable of melting ultra reinforced steel from kilometres away. To satisfy this need, the Annihilator shell was produced, packed with high explosives fitted in a cone warhead to focus the blast on the armour being penetrated. Launched from a 50 metre barrel, this munition was capable of obliterating any and all obstruction that lay between it and its target. After hearing about the foes faced by the last runner, the techs thought you might need some of these.\n\nThe ultimate in destructive power, anything you point this at will die, if you can get the warhead to go off that is. Designed for penetrating walls, these shells will tear straight through a weak target, and bounce off a strong one on anything but a direct hit. Coupled with the shoulder wrenching recoil, this weapon is finicky at best, but decisive if used correctly.")
 	end
 end
 
@@ -345,6 +394,55 @@ do --initialize enemy weapons
 		end, 
 		{0.7, 0.7, 1, 1}, simulationBody)
 	end
+
+	do --SpawnScrew
+		addWeapon("SpawnScrew", 
+		function(targetX, targetY, firingBody, world)
+			local enemy = Enemy.spawnEnemy("Careling", targetX, targetY, world)
+			Enemy.warnEnemy(enemy, 9)
+		end, 
+		{0, 1, 0, 1}, nil)
+	end
+	
+	do --SpawnGolem
+		addWeapon("SpawnGolem", 
+		function(targetX, targetY, firingBody, world)
+			Explosion.ring(targetX, targetY, 2, 1, 1, 40, 10, world)
+			--Explosion.colouredExplosion(targetX, targetY, 2, 1, 40, 10, world, {0.9, 0.9, 1, 0.8}, {0.4, 0.4, 0.5, 0.4})
+			local enemy = Enemy.spawnEnemy("Golem", targetX, targetY, world)
+			Enemy.warnEnemy(enemy, 9)
+		end, 
+		{0, 1, 0, 1}, nil)
+	end
+	
+	do --Golem Fist
+		local bulletSpeed = 30
+		addWeapon("Golem Fist", 
+		function(targetX, targetY, firingBody, world)
+			local x = firingBody.x
+			local y = firingBody.y
+			local angle = math.atan2(targetY - y, targetX - x)
+			Explosion.targettedBlast(x, y, 4, angle, math.pi/6, 0.4, 10, 15, world)
+		end, 
+		{0, 1, 0, 1}, nil)
+	end
+end
+
+function Weapon.clearDeadly(deadlies, map)
+	local i = #deadlies
+	while i > 0 do
+		local deadly = deadlies[i]
+		if not deadly.permanent then
+			local body = deadly.body
+			body.destroy = true
+			Map.addTileToCleanQueue(body.map, body.tile, body.layer)
+			deadly.trackingLine.destroy = true
+			table.remove(deadlies, i)
+		end
+		i = i - 1
+	end
+	
+	Map.cleanAllTiles(map)
 end
 
 function Weapon.simulateFire(weaponName, x, y, targetX, targetY, world)
